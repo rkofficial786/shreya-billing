@@ -1,0 +1,97 @@
+/* FloatingLabel.css */
+.floating-label-input {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.floating-label-wrapper {
+  position: relative;
+  height: fit-content;
+}
+
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  padding: 0 4px;
+  color: #8c8c8c;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.floating-label.required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.floating-label-wrapper.is-occupied .floating-label {
+  top: 0;
+  font-size: 12px;
+  /* color: #1890ff; */
+}
+
+.floating-label-wrapper.has-error .floating-label {
+  color: #ff4d4f;
+}
+
+/* Custom styling for inputs */
+.custom-input {
+  padding: 12px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.custom-input:hover,
+.custom-input:focus {
+  /* border-color: #1890ff; */
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* TextArea specific styles */
+.floating-label-wrapper .custom-textarea {
+  padding: 12px;
+  min-height: 80px;
+}
+
+.floating-label-wrapper .custom-textarea + .floating-label {
+  top: 12px;
+}
+
+.floating-label-wrapper.is-occupied .custom-textarea + .floating-label {
+  top: -8px;
+}
+
+/* Select specific styles */
+.floating-label-wrapper .custom-select {
+  width: 100%;
+}
+
+.floating-label-wrapper .custom-select .ant-select-selector {
+  padding: 12px !important;
+  height: auto !important;
+}
+
+.floating-label-wrapper .custom-select .ant-select-selection-search {
+  left: 12px !important;
+  right: 12px !important;
+}
+
+.floating-label-wrapper.is-occupied .custom-select + .floating-label {
+  top: -6px;
+}
+
+/* Error state styles */
+.floating-label-wrapper.has-error .custom-input,
+.floating-label-wrapper.has-error .custom-textarea,
+.floating-label-wrapper.has-error .custom-select .ant-select-selector {
+  border-color: #ff4d4f;
+}
+
+.error-message {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+}
