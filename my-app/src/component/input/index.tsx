@@ -40,6 +40,42 @@ const FloatingLabelInput = ({
   );
 };
 
+const FloatingLabelInputNumber = ({
+  label,
+  required,
+  value,
+  onChange,
+  type = "number",
+  error,
+  ...props
+}:any) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const isOccupied = isFocused || (value && value.length !== 0);
+
+  return (
+    <div className="floating-label-input">
+      <div
+        className={`floating-label-wrapper ${isOccupied ? "is-occupied" : ""} ${
+          error ? "has-error" : ""
+        }`}
+      >
+        <Input
+          {...props}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className="custom-input"
+        />
+        <label className={`floating-label ${required ? "required" : ""}`}>
+          {label}
+        </label>
+      </div>
+      {error && <div className="error-message">{error}</div>}
+    </div>
+  );
+};
+
 // Floating Label TextArea Component
 const FloatingLabelTextArea = ({
   label,
@@ -92,7 +128,7 @@ const FloatingLabelSelect = ({
   return (
     <div className="floating-label-input">
       <div
-        className={`floating-label-wrapper ${isOccupied ? "is-occupied" : ""} ${
+        className={`floating-label-wrapper  ${isOccupied ? "is-occupied" : ""} ${
           error ? "has-error" : ""
         }`}
       >
@@ -114,4 +150,4 @@ const FloatingLabelSelect = ({
   );
 };
 
-export { FloatingLabelInput, FloatingLabelTextArea, FloatingLabelSelect };
+export { FloatingLabelInput, FloatingLabelTextArea, FloatingLabelSelect  ,FloatingLabelInputNumber};

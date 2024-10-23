@@ -30,8 +30,11 @@
 .floating-label-wrapper.is-occupied .floating-label {
   top: 0;
   font-size: 12px;
+z-index: 100;
   /* color: #1890ff; */
 }
+
+
 
 .floating-label-wrapper.has-error .floating-label {
   color: #ff4d4f;
@@ -70,7 +73,7 @@
 }
 
 .floating-label-wrapper .custom-select .ant-select-selector {
-  padding: 12px !important;
+  padding: 8px !important;
   height: auto !important;
 }
 

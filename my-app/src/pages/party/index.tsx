@@ -121,11 +121,26 @@ const Party = () => {
           </div>
           <Button
             type="primary"
-            icon={<PlusOutlined />}
-            className="w-full "
+            
             onClick={() => setIsAddPartyModalOpen(true)}
+            className="w-full h-10 flex items-center justify-center gap-2 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg group relative overflow-hidden"
           >
-            Add Party
+            <span className="relative z-10 flex items-center gap-2">
+              <PlusOutlined className="text-lg transition-transform group-hover:rotate-90 duration-300" />
+              <span className="tracking-wide">Add Party</span>
+            </span>
+
+            {/* Hover effect overlay */}
+            <span className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+
+            {/* Subtle gradient background */}
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+            {/* Top highlight */}
+            <span className="absolute inset-x-0 top-0 h-px bg-white/20" />
+
+            {/* Bottom shadow */}
+            <span className="absolute inset-x-0 bottom-0 h-px bg-black/20" />
           </Button>
         </div>
         <AddPartyModal

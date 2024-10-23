@@ -19,9 +19,9 @@ const reducers = combineReducers({
 });
 
 const persistConfig = {
-  key: "textile-soft",
+  key: "shreya-sw",
   storage,
-  whitelist: ["quotedOrder", "lrEntry", "stockInGodown", "purchaseReturn"],
+  whitelist: ["user"],
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

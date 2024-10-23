@@ -12,6 +12,7 @@ import {
   FaChevronRight,
   FaBox,
   FaUser,
+  FaShoppingBag,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -63,7 +64,7 @@ const Sidebar: React.FC = () => {
     });
   };
   console.log(previouslyExpandedItems, "expanderd items");
-
+  console.log(theme,"theme");
   const sidebarItems: SidebarItem[] = [
     {
       icon: <FaHome size={20} />,
@@ -74,6 +75,11 @@ const Sidebar: React.FC = () => {
       icon: <FaUser size={20} />,
       text: "Party",
       path: "/party",
+    },
+    {
+      icon: <FaShoppingBag size={20} />,
+      text: "Items",
+      path: "/items",
     },
     {
       icon: <FaShoppingCart size={20} />,
@@ -139,6 +145,18 @@ const Sidebar: React.FC = () => {
           <span className="text-xl font-semibold text-white">Menu</span>
         )}
       </div>
+
+      <div className="absolute opacity-0">
+        <ThemeManager/>
+      </div>
+
+      <style>
+        {`
+        .floating-label-wrapper.is-occupied:focus-within .floating-label {
+  color: ${theme} !important; 
+}
+        `}
+      </style>
 
       <nav className="mt-8 px-2">
         {sidebarItems.map((item, index) => (
