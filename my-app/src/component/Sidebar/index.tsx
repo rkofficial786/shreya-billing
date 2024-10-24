@@ -13,6 +13,7 @@ import {
   FaBox,
   FaUser,
   FaShoppingBag,
+  FaStamp,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -82,11 +83,11 @@ const Sidebar: React.FC = () => {
       path: "/items",
     },
     {
-      icon: <FaShoppingCart size={20} />,
-      text: "Entries",
-      path: "/PurchaseOrderForm",
+      icon: <FaStamp size={20} />,
+      text: "Sale",
+      path: "/sale",
       subItems: [
-        { text: "Create Quote Order", path: "/PurchaseOrderForm/create" },
+        { text: "Sale Invoices", path: "/sale/invoices" },
         // { text: "Create Purchase Entry", path: "/PurchaseEntryForm/create" },
         // { text: "View Purchase Form", path: "/GetPurchaseOrderForm" },
         { text: "Lorry Entry", path: "/LorryEntry/create" },

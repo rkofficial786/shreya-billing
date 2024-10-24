@@ -3,6 +3,8 @@ import Party from "../pages/party";
 import Home from "../pages/Home";
 import Items from "../pages/items";
 import AddItemPage from "../pages/items/add-item";
+import SaleInvoices from "../pages/sale/saleInvoices";
+import AddSale from "../pages/sale/saleInvoices/addSale";
 
 function Router() {
   return (
@@ -14,6 +16,8 @@ function Router() {
           <Route path="/party" element={<Party />} />
           <Route path="/items" element={<Items />} />
           <Route path="/items/add-item" element={<AddItemPage />} />
+          <Route path="/sale/invoices" element={<SaleInvoices />} />
+          <Route path="/sale/invoices/add-sale" element={<AddSale />} />
           {/* Add more routes here as needed */}
         </Route>
       </Routes>
