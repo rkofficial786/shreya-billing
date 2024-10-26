@@ -5,6 +5,7 @@ import Items from "../pages/items";
 import AddItemPage from "../pages/items/add-item";
 import SaleInvoices from "../pages/sale/saleInvoices";
 import AddSale from "../pages/sale/saleInvoices/addSale";
+import Quotation from "../pages/sale/quotation";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
           <Route path="/items/add-item" element={<AddItemPage />} />
           <Route path="/sale/invoices" element={<SaleInvoices />} />
           <Route path="/sale/invoices/add-sale" element={<AddSale />} />
+          <Route path="/sale/quotation" element={<Quotation />} />
           {/* Add more routes here as needed */}
         </Route>
       </Routes>

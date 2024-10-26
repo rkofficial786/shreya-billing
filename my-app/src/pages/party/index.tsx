@@ -121,7 +121,6 @@ const Party = () => {
           </div>
           <Button
             type="primary"
-            
             onClick={() => setIsAddPartyModalOpen(true)}
             className="w-full h-10 flex items-center justify-center gap-2 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg group relative overflow-hidden"
           >

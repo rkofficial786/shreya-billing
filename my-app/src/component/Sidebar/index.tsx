@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
         { text: "Sale Invoices", path: "/sale/invoices" },
         // { text: "Create Purchase Entry", path: "/PurchaseEntryForm/create" },
         // { text: "View Purchase Form", path: "/GetPurchaseOrderForm" },
-        { text: "Lorry Entry", path: "/LorryEntry/create" },
+        { text: "Quotation", path: "/sale/quotation" },
         // { text: "Lorry To Transport", path: "/LorrySentToTransport/create" },
         // { text: "View Lorry Entry", path: "/GetLorryEntry" },
 
