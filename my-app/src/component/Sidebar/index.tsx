@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
     });
   };
   console.log(previouslyExpandedItems, "expanderd items");
-  console.log(theme,"theme");
+  console.log(theme, "theme");
   const sidebarItems: SidebarItem[] = [
     {
       icon: <FaHome size={20} />,
@@ -91,12 +91,9 @@ const Sidebar: React.FC = () => {
         // { text: "Create Purchase Entry", path: "/PurchaseEntryForm/create" },
         // { text: "View Purchase Form", path: "/GetPurchaseOrderForm" },
         { text: "Quotation", path: "/sale/quotation" },
-        // { text: "Lorry To Transport", path: "/LorrySentToTransport/create" },
-        // { text: "View Lorry Entry", path: "/GetLorryEntry" },
-
-        // { text: "Get Products", path: "/GetPurchaseEntry" },
-        { text: "Stock In Godown", path: "/StockInGodown/create" },
-        { text: "Purchase Return", path: "/PurchaseReturn/create" },
+        { text: "Sale Order", path: "/sale/order" },
+        { text: "Deliver Challan", path: "/sale/delivery-challan" },
+        { text: "Sale Return/CR", path: "/sale/credit-note" },
       ],
     },
     // {
@@ -133,14 +130,12 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-    
       className={`h-screen bg-white border-r-2 text-gray-800 transition-all duration-300 ease-in-out ${
         isOpen ? "w-64" : "w-20"
       }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      
       <div className="flex items-center justify-between h-16 px-4 text-gray-800">
         {isOpen && (
           <span className="text-xl font-semibold text-white">Menu</span>
@@ -148,7 +143,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="absolute opacity-0">
-        <ThemeManager/>
+        <ThemeManager />
       </div>
 
       <style>
@@ -206,7 +201,6 @@ const Sidebar: React.FC = () => {
               <p className="text-sm text-primary-100">Administrator</p>
             </div>
             <div className="flex gap-2">
-              
               {/* <button className="text-primary-100 hover:text-white transition-colors duration-200">
                 <FaCog size={20} />
               </button> */}

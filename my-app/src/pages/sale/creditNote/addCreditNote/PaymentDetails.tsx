@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Form,
   Space,
@@ -42,13 +42,17 @@ const PaymentDetails = ({
   const [showDescription, setShowDescription] = useState(false);
 
   const handleDescriptionChange = (e) => {
+    // Get the value from the event target
     const value = e?.target?.value || e;
+
+    // Set the description value in the form
     form.setFieldsValue({
       description: value,
     });
   };
 
   const handleRemoveDescription = () => {
+    // Clear the description field and hide the textarea
     form.setFieldsValue({
       description: undefined,
     });
@@ -56,49 +60,34 @@ const PaymentDetails = ({
   };
 
   // Initialize with a single payment if none exists
-  useEffect(() => {
+  React.useEffect(() => {
     if (payments.length === 0) {
       setPayments([{ id: Date.now(), type: "Cash", amount: 0 }]);
     }
   }, []);
 
-  // Handle isCash changes
-  useEffect(() => {
-    if (isCash) {
-      // If isCash is true, set a single payment equal to the total amount
-      const totalAmount = calculateTotal();
-      setPayments([{ id: Date.now(), type: "Cash", amount: totalAmount }]);
-      setReceivedAmount(totalAmount);
-    }
-  }, [isCash, calculateTotal]);
-
   // Update parent component's receivedAmount whenever payments change
-  useEffect(() => {
-    if (!isCash) {
-      setReceivedAmount(totalReceivedAmount);
-    }
-  }, [totalReceivedAmount, setReceivedAmount, isCash]);
+  React.useEffect(() => {
+    setReceivedAmount(totalReceivedAmount);
+  }, [totalReceivedAmount, setReceivedAmount]);
 
   const handleAddPayment = () => {
-    if (!isCash) {
-      setPayments([...payments, { id: Date.now(), type: "Cash", amount: 0 }]);
-    }
+    setPayments([...payments, { id: Date.now(), type: "Cash", amount: 0 }]);
   };
 
   const handleRemovePayment = (id) => {
-    if (!isCash && payments.length > 1) {
+    // Only allow removal if there's more than one payment
+    if (payments.length > 1) {
       setPayments(payments.filter((payment) => payment.id !== id));
     }
   };
 
   const handlePaymentChange = (id, field, value) => {
-    if (!isCash) {
-      setPayments(
-        payments.map((payment) =>
-          payment.id === id ? { ...payment, [field]: value } : payment
-        )
-      );
-    }
+    setPayments(
+      payments.map((payment) =>
+        payment.id === id ? { ...payment, [field]: value } : payment
+      )
+    );
   };
 
   const handleUpload = ({ file, onSuccess }, type) => {
@@ -152,13 +141,14 @@ const PaymentDetails = ({
         {/* Payment entries */}
         {payments.map((payment, index) => (
           <div key={payment.id} className="flex items-center w-full gap-2">
+            {/* Only show payment type selector for the first payment */}
+
             <FloatingLabelSelect
               value={payment.type}
               onChange={(value) =>
                 handlePaymentChange(payment.id, "type", value)
               }
               className="w-2/12"
-              disabled={isCash}
             >
               <Option value="Cash">Cash</Option>
               <Option value="Cheque">Cheque</Option>
@@ -172,11 +162,10 @@ const PaymentDetails = ({
               prefix="₹"
               className="w-2/12 py-2"
               min={0}
-              disabled={isCash}
             />
 
-            {/* Only show delete button for additional payments when not cash */}
-            {index > 0 && !isCash && (
+            {/* Only show delete button for additional payments */}
+            {index > 0 && (
               <Button
                 type="text"
                 icon={<DeleteOutlined />}
@@ -187,25 +176,22 @@ const PaymentDetails = ({
           </div>
         ))}
 
-        {/* Only show Add Payment button when not cash */}
-        {!isCash && (
-          <Button
-            type="dashed"
-            onClick={handleAddPayment}
-            className="w-[35%]"
-            icon={<PlusOutlined />}
-          >
-            Add Payment
-          </Button>
-        )}
+        <Button
+          type="dashed"
+          onClick={handleAddPayment}
+          className="w-[35%]"
+          icon={<PlusOutlined />}
+        >
+          Add Payment
+        </Button>
         <br />
-
         {/* Description section */}
         {showDescription ? (
           <Form.Item name="description" label="Description">
             <FloatingLabelTextArea
               onChange={handleDescriptionChange}
               rows={4}
+              
             />
             <Button
               type="text"
@@ -249,7 +235,7 @@ const PaymentDetails = ({
         <div className="flex justify-between items-center">
           <span>Round Off</span>
           <Space>
-            <Switch defaultChecked disabled={isCash} />
+            <Switch defaultChecked />
             <span>-0.3</span>
           </Space>
         </div>
@@ -264,12 +250,10 @@ const PaymentDetails = ({
           <span>₹{totalReceivedAmount.toFixed(2)}</span>
         </div>
 
-        {!isCash && (
-          <div className="flex justify-between items-center font-bold">
-            <span>Balance</span>
-            <span>₹{(calculateTotal() - totalReceivedAmount).toFixed(2)}</span>
-          </div>
-        )}
+        <div className="flex justify-between items-center font-bold">
+          <span>Balance</span>
+          <span>₹{(calculateTotal() - totalReceivedAmount).toFixed(2)}</span>
+        </div>
       </div>
     </div>
   );

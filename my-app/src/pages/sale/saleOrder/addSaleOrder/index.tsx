@@ -7,7 +7,7 @@ import PaymentDetails from "./PaymentDetails";
 import { SalesFormHeader } from "./Header";
 import { ItemsTable } from "./ItemTable";
 
-const AddSale = () => {
+const AddSaleOrder = () => {
   const [form] = Form.useForm();
   const [items, setItems] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -18,8 +18,8 @@ const AddSale = () => {
   const docRef = useRef();
 
   const initialData = {
-    invoiceNumber: "2",
-    invoiceDate: dayjs(),
+    orderNumber: "2",
+    orderDate: dayjs(),
     paymentType: "Cash",
     roundOff: -0.3,
   };
@@ -112,7 +112,9 @@ const AddSale = () => {
   };
 
   const calculateTotal = () => {
-    return items.reduce((acc, curr) => acc + calculateFinalAmount(curr), 0);
+    return items
+      .reduce((acc, curr) => acc + calculateFinalAmount(curr), 0)
+      .toFixed(2);
   };
 
   const calculateBalance = () => {
@@ -130,9 +132,9 @@ const AddSale = () => {
           customerName: formValues.customerName,
           phoneNumber: formValues.phoneNumber,
         },
-        invoiceDetails: {
-          invoiceNumber: formValues.invoiceNumber,
-          invoiceDate: formValues.invoiceDate.toISOString(),
+        orderDetails: {
+          orderNumber: formValues.orderNumber,
+          orderDate: formValues.orderDate.toISOString(),
           stateOfSupply: formValues.stateOfSupply,
         },
 
@@ -141,7 +143,6 @@ const AddSale = () => {
             type: payment.type,
             amount: payment.amount,
           })),
-          isCash: isCash,
           totalReceived: totalReceivedAmount,
           balance: calculateTotal() - totalReceivedAmount,
           roundOff: formValues.roundOff || 0,
@@ -232,4 +233,4 @@ const AddSale = () => {
   );
 };
 
-export default AddSale;
+export default AddSaleOrder;

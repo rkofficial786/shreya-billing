@@ -16,28 +16,18 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
   const handleCustomerSelect = (value, option) => {
     form.setFieldsValue({
       customerName: value,
-      phoneNumber: option.phoneNumber, // Assuming phone number is part of the option data
+      phoneNumber: option.phoneNumber,
+      orderNumber: option.orderNumber,
     });
   };
 
   return (
     <>
       <div className="flex justify-between mb-4 gap-10">
-        <div className="flex items-center gap-8">
-          <h3 className="text-2xl">Add Sale</h3>
-          <Space>
-            <span>Credit</span>
-            <Switch
-              checked={isCash}
-              onChange={(checked) => setIsCash(checked)}
-            />
-            <span>Cash</span>
-          </Space>
-        </div>
-
+        <h3 className="text-2xl">Sale Order</h3>
         <Popconfirm
           title="Are you Sure to go back?"
-          onConfirm={() => navigate("/sale/invoices")}
+          onConfirm={() => navigate("/sale/order")}
         >
           <X className="cursor-pointer" />
         </Popconfirm>
@@ -45,14 +35,14 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Form.Item
-          className="mb-0"
           name="customerName"
+          label="Search by Name/Phone"
+          className="mb-0"
           rules={[{ required: true, message: "Please select a customer" }]}
         >
           <FloatingLabelSelect
-            showSearch
             className="mb-0"
-            label="Search by Name/Phone"
+            showSearch
             placeholder="Select customer"
             optionFilterProp="children"
             onChange={handleCustomerSelect}
@@ -64,7 +54,7 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
 
         <Form.Item
           name="phoneNumber"
-          className="mb-0"
+          label="Phone No."
           rules={[
             { required: true, message: "Please enter phone number" },
             {
@@ -73,32 +63,28 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
             },
           ]}
         >
-          <FloatingLabelInput className="mb-0" label="Enter phone number" />
+          <FloatingLabelInput label="Enter phone number" />
+        </Form.Item>
+
+        <Form.Item name="orderNumber" label="Order number">
+          <FloatingLabelInput label="ON" />
         </Form.Item>
 
         <Form.Item
-          name="invoiceNumber"
-          className="mb-0"
-          initialValue={initialData.invoiceNumber}
+          name="orderDate"
+          label="Order Date"
+          initialValue={initialData.orderDate}
+          rules={[{ required: true, message: "Please select Order date" }]}
         >
-          <FloatingLabelInput className="mb-0" label="Invoice Number" />
-        </Form.Item>
-
-        <Form.Item
-          name="invoiceDate"
-          className="mb-0"
-          initialValue={initialData.invoiceDate}
-          rules={[{ required: true, message: "Please select invoice date" }]}
-        >
-          <DatePicker placeholder="Invoice Date" className="w-full py-3 mb-0" />
+          <DatePicker className="w-full py-3" />
         </Form.Item>
 
         <Form.Item
           name="stateOfSupply"
-          className="mb-0"
+          label="State of Supply"
           rules={[{ required: true, message: "Please select state of supply" }]}
         >
-          <FloatingLabelSelect label="State of Supply" className="mb-0">
+          <FloatingLabelSelect placeholder="Select state">
             <Option value="state1">State 1</Option>
             <Option value="state2">State 2</Option>
           </FloatingLabelSelect>

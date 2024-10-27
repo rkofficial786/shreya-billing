@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import SalesStatistics from "./SalesStatic";
 import { useNavigate } from "react-router-dom";
+import TransactionHeader from "../../../component/TransactionHeader";
 const { RangePicker } = DatePicker;
 
 const SaleInvoices = () => {
@@ -132,6 +133,11 @@ const SaleInvoices = () => {
 
   return (
     <div className="p-6">
+      <TransactionHeader
+        title="Sale Invoices"
+        subtitle="Review and Manage Your Sales Transactions"
+      />
+
       {/* Summary Cards */}
       <SalesStatistics />
 

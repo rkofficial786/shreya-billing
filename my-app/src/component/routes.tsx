@@ -5,7 +5,14 @@ import Items from "../pages/items";
 import AddItemPage from "../pages/items/add-item";
 import SaleInvoices from "../pages/sale/saleInvoices";
 import AddSale from "../pages/sale/saleInvoices/addSale";
-import Quotation from "../pages/sale/quotation";
+import Estimates from "../pages/sale/estimates";
+import SaleOrder from "../pages/sale/saleOrder";
+import DeliveryChallan from "../pages/sale/deliverChllan";
+import AddSaleOrder from "../pages/sale/saleOrder/addSaleOrder";
+import AddChallan from "../pages/sale/deliverChllan/addDeliveryChallan";
+import AddQuotation from "../pages/sale/estimates/addQuotation";
+import CreditNote from "../pages/sale/creditNote";
+import AddCreditNote from "../pages/sale/creditNote/addCreditNote";
 
 function Router() {
   return (
@@ -19,7 +26,15 @@ function Router() {
           <Route path="/items/add-item" element={<AddItemPage />} />
           <Route path="/sale/invoices" element={<SaleInvoices />} />
           <Route path="/sale/invoices/add-sale" element={<AddSale />} />
-          <Route path="/sale/quotation" element={<Quotation />} />
+          <Route path="/sale/quotation" element={<Estimates />} />
+          <Route path="/sale/quotation/add" element={<AddQuotation />} />
+          <Route path="/sale/order" element={<SaleOrder />} />
+          <Route path="/sale/credit-note" element={<CreditNote />} />
+          <Route path="/sale/credit-note/add" element={<AddCreditNote />} />
+ 
+          <Route path="/sale/order/add" element={<AddSaleOrder />} />
+          <Route path="/sale/delivery-challan" element={<DeliveryChallan />} />
+          <Route path="/sale/delivery-challan/add" element={<AddChallan />} />
           {/* Add more routes here as needed */}
         </Route>
       </Routes>

@@ -7,7 +7,7 @@ import PaymentDetails from "./PaymentDetails";
 import { SalesFormHeader } from "./Header";
 import { ItemsTable } from "./ItemTable";
 
-const AddSale = () => {
+const AddQuotation = () => {
   const [form] = Form.useForm();
   const [items, setItems] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -112,7 +112,9 @@ const AddSale = () => {
   };
 
   const calculateTotal = () => {
-    return items.reduce((acc, curr) => acc + calculateFinalAmount(curr), 0);
+    return items
+      .reduce((acc, curr) => acc + calculateFinalAmount(curr), 0)
+      .toFixed(2);
   };
 
   const calculateBalance = () => {
@@ -128,22 +130,15 @@ const AddSale = () => {
       const saleData = {
         customerInfo: {
           customerName: formValues.customerName,
-          phoneNumber: formValues.phoneNumber,
         },
         invoiceDetails: {
-          invoiceNumber: formValues.invoiceNumber,
+          referenceNumber: formValues.referenceNumber,
           invoiceDate: formValues.invoiceDate.toISOString(),
           stateOfSupply: formValues.stateOfSupply,
         },
 
         paymentDetails: {
-          payments: payments.map((payment) => ({
-            type: payment.type,
-            amount: payment.amount,
-          })),
-          isCash: isCash,
-          totalReceived: totalReceivedAmount,
-          balance: calculateTotal() - totalReceivedAmount,
+          total: calculateTotal(),
           roundOff: formValues.roundOff || 0,
           description: formValues.description,
         },
@@ -154,12 +149,6 @@ const AddSale = () => {
             url: file.url,
             uid: file.uid,
             type: file.type,
-          })),
-          documents: docList.map((doc) => ({
-            name: doc.name,
-            url: doc.url,
-            uid: doc.uid,
-            type: doc.type,
           })),
         },
       };
@@ -232,4 +221,4 @@ const AddSale = () => {
   );
 };
 
-export default AddSale;
+export default AddQuotation;

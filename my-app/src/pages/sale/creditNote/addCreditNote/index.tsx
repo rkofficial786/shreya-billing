@@ -7,7 +7,7 @@ import PaymentDetails from "./PaymentDetails";
 import { SalesFormHeader } from "./Header";
 import { ItemsTable } from "./ItemTable";
 
-const AddSale = () => {
+const AddCreditNote = () => {
   const [form] = Form.useForm();
   const [items, setItems] = useState([]);
   const [fileList, setFileList] = useState([]);
@@ -18,7 +18,7 @@ const AddSale = () => {
   const docRef = useRef();
 
   const initialData = {
-    invoiceNumber: "2",
+    returnNumber: "2",
     invoiceDate: dayjs(),
     paymentType: "Cash",
     roundOff: -0.3,
@@ -131,6 +131,7 @@ const AddSale = () => {
           phoneNumber: formValues.phoneNumber,
         },
         invoiceDetails: {
+          returnNumber: formValues.returnNumber,
           invoiceNumber: formValues.invoiceNumber,
           invoiceDate: formValues.invoiceDate.toISOString(),
           stateOfSupply: formValues.stateOfSupply,
@@ -141,7 +142,6 @@ const AddSale = () => {
             type: payment.type,
             amount: payment.amount,
           })),
-          isCash: isCash,
           totalReceived: totalReceivedAmount,
           balance: calculateTotal() - totalReceivedAmount,
           roundOff: formValues.roundOff || 0,
@@ -232,4 +232,4 @@ const AddSale = () => {
   );
 };
 
-export default AddSale;
+export default AddCreditNote;

@@ -1,8 +1,17 @@
 import React from "react";
-import { Form, Switch, Space, DatePicker, Select, Popconfirm } from "antd";
+import {
+  Form,
+  Switch,
+  Space,
+  DatePicker,
+  Select,
+  Popconfirm,
+  Input,
+} from "antd";
 import {
   FloatingLabelSelect,
   FloatingLabelInput,
+  FloatingLabelInputNumber,
 } from "../../../../component/input";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -24,15 +33,15 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
     <>
       <div className="flex justify-between mb-4 gap-10">
         <div className="flex items-center gap-8">
-          <h3 className="text-2xl">Add Sale</h3>
-          <Space>
+          <h3 className="text-2xl">Credit Note</h3>
+          {/* <Space>
             <span>Credit</span>
             <Switch
               checked={isCash}
               onChange={(checked) => setIsCash(checked)}
             />
             <span>Cash</span>
-          </Space>
+          </Space> */}
         </div>
 
         <Popconfirm
@@ -45,15 +54,15 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Form.Item
-          className="mb-0"
           name="customerName"
+          className="mb-0"
+          // label="Search by Name/Phone"
           rules={[{ required: true, message: "Please select a customer" }]}
         >
           <FloatingLabelSelect
             showSearch
             className="mb-0"
-            label="Search by Name/Phone"
-            placeholder="Select customer"
+            label="Select customer"
             optionFilterProp="children"
             onChange={handleCustomerSelect}
           >
@@ -64,6 +73,7 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
 
         <Form.Item
           name="phoneNumber"
+         
           className="mb-0"
           rules={[
             { required: true, message: "Please enter phone number" },
@@ -73,37 +83,65 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
             },
           ]}
         >
-          <FloatingLabelInput className="mb-0" label="Enter phone number" />
+          <FloatingLabelInput label="Enter phone number" />
         </Form.Item>
 
         <Form.Item
-          name="invoiceNumber"
-          className="mb-0"
-          initialValue={initialData.invoiceNumber}
+          name="returnNumber"
+          className="mb-0 "
+          
+          initialValue={initialData.returnNumber}
         >
-          <FloatingLabelInput className="mb-0" label="Invoice Number" />
+          <FloatingLabelInputNumber className="py-3" label="Return Number" />
+        </Form.Item>
+
+        {/* <Form.Item 
+  name="returnNumber" 
+  initialValue={initialData.returnNumber}
+  // Remove default label alignment
+  labelCol={{ flex: '0 0 auto' }}
+  wrapperCol={{ flex: '1 1 auto' }}
+  // Force horizontal layout
+  labelAlign="left"
+  // Important: this makes the layout horizontal
+  className="!flex !flex-row !items-center mb-1"
+  colon={false}
+  label={<span className="text-xs text-gray-600 whitespace-nowrap">Return Number</span>}
+>
+  <Input               
+    className="border-0 border-b border-gray-200 rounded-none focus:shadow-none hover:border-b hover:border-gray-400 transition-colors text-xs py-1"
+    placeholder="Enter return number"
+  />
+</Form.Item> */}
+
+        <Form.Item className="mb-0" name="invoiceNumber" >
+          <FloatingLabelInput label="Invoice Number" />
         </Form.Item>
 
         <Form.Item
           name="invoiceDate"
           className="mb-0"
+        
           initialValue={initialData.invoiceDate}
           rules={[{ required: true, message: "Please select invoice date" }]}
         >
-          <DatePicker placeholder="Invoice Date" className="w-full py-3 mb-0" />
+          <DatePicker className="w-full py-3" />
         </Form.Item>
 
         <Form.Item
           name="stateOfSupply"
+          
           className="mb-0"
           rules={[{ required: true, message: "Please select state of supply" }]}
         >
-          <FloatingLabelSelect label="State of Supply" className="mb-0">
+          <FloatingLabelSelect label="Select state of supply">
             <Option value="state1">State 1</Option>
             <Option value="state2">State 2</Option>
           </FloatingLabelSelect>
         </Form.Item>
       </div>
+      {/* border-b border-gray-200 rounded-none hover:border-b hover:border-gray-300 */}
+      <div></div>
     </>
   );
 };
