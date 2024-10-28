@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+
+//@ts-nocheck
+
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Button,
@@ -26,8 +29,8 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
-const AddPartyModal = ({ visible, onClose, onSubmit }) => {
-  const [form] = Form.useForm();
+const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
+  
   const [loading, setLoading] = useState(false);
   const [enableShipping, setEnableShipping] = useState(false);
   const [customLimit, setCustomLimit] = useState(false);
@@ -35,24 +38,91 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
     { key: "", value: "" },
   ]);
 
+  console.log(initialValues,"inital values");
+  
+
+  // Initialize form with data when in edit mode
+  useEffect(() => {
+    if (initialValues) {
+      // Transform the data structure to match form fields
+      const formValues = {
+        partyName: initialValues.name,
+        gstin: initialValues.gstin,
+        phoneNumber: initialValues.phone,
+        gstType: initialValues.gstAndAddress.gstType,
+        state: initialValues.gstAndAddress.state,
+        emailId: initialValues.gstAndAddress.email,
+        billingAddress: initialValues.gstAndAddress.billingAddress,
+        openingBalance: initialValues.creditAndBlance.openingBalance,
+        asOfDate: dayjs(initialValues.creditAndBlance.date),
+        creditLimit: initialValues.creditAndBlance.limit
+      };
+      
+      // Set shipping address if exists
+      if (initialValues.gstAndAddress.shipping?.length > 0) {
+        setEnableShipping(true);
+        formValues.shippingAddress = initialValues.gstAndAddress.shipping[0];
+      }
+
+      // Set credit limit switch if limit exists
+      if (initialValues.creditAndBlance.limit !== null) {
+        setCustomLimit(true);
+      }
+
+      // Transform additional fields to match the component's structure
+      if (initialValues.additionalFields?.length > 0) {
+        const transformedFields = initialValues.additionalFields
+          .filter(field => field.key && field.value)
+          .map(field => ({
+            key: field.key,
+            value: field.value
+          }));
+        
+        setAdditionalFields(transformedFields.length > 0 ? transformedFields : [{ key: "", value: "" }]);
+      }
+
+      // Set all form values
+      form.setFieldsValue(formValues);
+    } else {
+      // If no initial values, set default date
+      form.setFieldsValue({
+        asOfDate: dayjs(),
+      });
+    }
+  }, [initialValues, form]);
+
   const handleSubmit = async (saveAndNew = false) => {
     try {
       setLoading(true);
       const values = await form.validateFields();
 
-      // Convert additional fields array to object
-      const additionalFieldsObject = additionalFields.reduce((acc, field) => {
+      // Create additionalFields object from the array
+      const additionalFieldsData = {};
+      additionalFields.forEach(field => {
         if (field.key && field.value) {
-          // Only include fields that have both key and value
-          acc[field.key] = field.value;
+          additionalFieldsData[field.key] = field.value;
         }
-        return acc;
-      }, {});
+      });
 
-      // Combine form values with additional fields
+      // Transform the data to match the API structure
       const finalValues = {
-        ...values,
-        ...additionalFieldsObject,
+        name: values.partyName,
+        gstin: values.gstin,
+        phone: values.phoneNumber,
+        gstAndAddress: {
+          gstType: values.gstType,
+          state: values.state,
+          email: values.emailId,
+          billingAddress: values.billingAddress,
+          shipping: enableShipping ? [values.shippingAddress] : []
+        },
+        creditAndBlance: {
+          openingBalance: values.openingBalance,
+          date: values.asOfDate.toISOString(),
+          limit: customLimit ? values.creditLimit : undefined
+        },
+        additionalFields: additionalFieldsData,
+        ...(initialValues?._id ? { _id: initialValues._id } : {})
       };
 
       await onSubmit(finalValues);
@@ -61,7 +131,6 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
         onClose();
       } else {
         form.resetFields();
-        // Reset additional fields
         setAdditionalFields([{ key: "", value: "" }]);
       }
     } catch (error) {
@@ -71,6 +140,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
     }
   };
 
+  // Rest of the component remains the same
   const handleAddField = () => {
     setAdditionalFields([...additionalFields, { key: "", value: "" }]);
   };
@@ -96,12 +166,6 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
     { value: "maharashtra", label: "Maharashtra" },
     { value: "karnataka", label: "Karnataka" },
   ];
-
-  React.useEffect(() => {
-    form.setFieldsValue({
-      asOfDate: dayjs(), // Set default date to today
-    });
-  }, [form]);
 
   const tabItems = [
     {
@@ -147,7 +211,6 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
       label: (
         <div className="flex items-center gap-2">
           Credit & Balance
-          
         </div>
       ),
       children: (
@@ -164,7 +227,6 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
             <DatePicker
               className="w-full"
               placeholder="As Of Date"
-              value={new Date()}
             />
           </Form.Item>
 
@@ -239,7 +301,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit }) => {
       title={
         <div className="flex justify-between items-center">
           <Title level={5} className="m-0">
-            Add Party
+            {initialValues ? 'Edit Party' : 'Add Party'}
           </Title>
           <Space>
             <Button

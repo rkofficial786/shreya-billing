@@ -1,6 +1,6 @@
 import createApiInstance from "./createApiInstance";
 
-export const baseUrl = "https://backend.rajlaxmitextiles.com";
+export const baseUrl = "http://localhost:5000";
 // "https://badly-evident-guinea.ngrok-free.app";
 
 const api = createApiInstance(baseUrl);

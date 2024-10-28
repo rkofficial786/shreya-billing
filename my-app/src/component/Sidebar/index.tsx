@@ -91,6 +91,7 @@ const Sidebar: React.FC = () => {
         // { text: "Create Purchase Entry", path: "/PurchaseEntryForm/create" },
         // { text: "View Purchase Form", path: "/GetPurchaseOrderForm" },
         { text: "Quotation", path: "/sale/quotation" },
+        { text: "Payment Invoice", path: "/sale/payment-invoice" },
         { text: "Sale Order", path: "/sale/order" },
         { text: "Deliver Challan", path: "/sale/delivery-challan" },
         { text: "Sale Return/CR", path: "/sale/credit-note" },
@@ -142,7 +143,7 @@ const Sidebar: React.FC = () => {
         )}
       </div>
 
-      <div className="absolute opacity-0">
+      <div className="absolute -top-28 opacity-0">
         <ThemeManager />
       </div>
 

@@ -5,6 +5,7 @@ import {
   FloatingLabelSelect,
   FloatingLabelTextArea,
 } from "../../component/input";
+import TextArea from "antd/es/input/TextArea";
 
 const PartyInfoModal = ({
   isOpen,
@@ -33,13 +34,6 @@ const PartyInfoModal = ({
               ]}
             >
               <FloatingLabelInput label="Enter 10-digit phone number" />
-            </Form.Item>
-            <Form.Item name="phoneType" label="Type" initialValue="primary">
-              <FloatingLabelSelect>
-                <Select.Option value="primary">Primary</Select.Option>
-                <Select.Option value="secondary">Secondary</Select.Option>
-                <Select.Option value="work">Work</Select.Option>
-              </FloatingLabelSelect>
             </Form.Item>
           </>
         );
@@ -75,12 +69,6 @@ const PartyInfoModal = ({
                 placeholder="Enter credit limit"
               />
             </Form.Item>
-            <Form.Item name="creditTerms" label="Credit Terms">
-              <FloatingLabelTextArea
-                placeholder="Enter credit terms and conditions"
-                rows={4}
-              />
-            </Form.Item>
           </>
         );
 
@@ -110,37 +98,7 @@ const PartyInfoModal = ({
               label="Address Line 1"
               rules={[{ required: true, message: "Please enter address" }]}
             >
-              <Input placeholder="Enter street address" />
-            </Form.Item>
-            <Form.Item name="addressLine2" label="Address Line 2">
-              <Input placeholder="Enter apartment, suite, etc." />
-            </Form.Item>
-            <Form.Item
-              name="city"
-              label="City"
-              rules={[{ required: true, message: "Please enter city" }]}
-            >
-              <Input placeholder="Enter city" />
-            </Form.Item>
-            <Form.Item
-              name="state"
-              label="State"
-              rules={[{ required: true, message: "Please enter state" }]}
-            >
-              <Input placeholder="Enter state" />
-            </Form.Item>
-            <Form.Item
-              name="pincode"
-              label="Pincode"
-              rules={[
-                { required: true, message: "Please enter pincode" },
-                {
-                  pattern: /^[1-9][0-9]{5}$/,
-                  message: "Please enter valid 6-digit pincode",
-                },
-              ]}
-            >
-              <Input placeholder="Enter pincode" />
+              <TextArea placeholder="Enter street address" />
             </Form.Item>
           </>
         );

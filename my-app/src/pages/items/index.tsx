@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -25,30 +25,34 @@ import {
   MoreOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getAllItems, setEditItem } from "../../store/items";
 
 const Items = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [items, setItems] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const navigate = useNavigate();
-  // Dummy data - this would come from API later
-  const [items] = useState([
-    {
-      id: 1,
-      name: "Sample Item",
-      quantity: -10,
-      category: "Electronics",
-      lastUpdated: "2024-10-20",
-      status: "Low Stock",
-    },
-    {
-      id: 2,
-      name: "Test Product",
-      quantity: 50,
-      category: "Accessories",
-      lastUpdated: "2024-10-19",
-      status: "In Stock",
-    },
-  ]);
+  const dispatch = useDispatch<any>();
+
+  const callGetAllItems = async () => {
+    try {
+      const { payload } = await dispatch(getAllItems());
+      console.log(payload);
+      if (payload.data.success) {
+        setItems(payload.data.items);
+        if (payload.data.items.length > 0) {
+          setSelectedRecord(payload.data.items[0]);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    callGetAllItems();
+  }, []);
 
   const [transactions] = useState([
     {
@@ -84,7 +88,8 @@ const Items = () => {
         setIsModalVisible(true);
         break;
       case "edit":
-        // Handle edit
+        dispatch(setEditItem(record));
+        navigate(`/items/add-item?id=${record._id}`);
         break;
       case "delete":
         // Handle delete
@@ -178,12 +183,14 @@ const Items = () => {
 
     {
       title: "QUANTITY",
-      dataIndex: "quantity",
+      dataIndex: ["stock", "openingQty"], // Modified to access nested property
       key: "quantity",
       align: "right",
-      render: (quantity) => (
-        <span className={quantity < 0 ? "text-red-500" : "text-green-500"}>
-          {quantity}
+      render: (
+        openingQty // Changed parameter name to match
+      ) => (
+        <span className={openingQty < 0 ? "text-red-500" : "text-green-500"}>
+          {openingQty}
         </span>
       ),
     },
@@ -302,7 +309,7 @@ const Items = () => {
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 px-4">
         <Card className="mb-4 shadow-crisp">
           <div className="flex justify-between items-center mb-4">
             <span className="text-lg font-medium">TRANSACTIONS</span>

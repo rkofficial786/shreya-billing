@@ -13,6 +13,8 @@ import AddChallan from "../pages/sale/deliverChllan/addDeliveryChallan";
 import AddQuotation from "../pages/sale/estimates/addQuotation";
 import CreditNote from "../pages/sale/creditNote";
 import AddCreditNote from "../pages/sale/creditNote/addCreditNote";
+import PaymentInVoice from "../pages/sale/payymentIn";
+import Dashboard from "../pages/dashboard";
 
 function Router() {
   return (
@@ -22,6 +24,7 @@ function Router() {
           {/* All child routes will render inside Layout's Outlet */}
 
           <Route path="/party" element={<Party />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/items" element={<Items />} />
           <Route path="/items/add-item" element={<AddItemPage />} />
           <Route path="/sale/invoices" element={<SaleInvoices />} />
@@ -30,8 +33,9 @@ function Router() {
           <Route path="/sale/quotation/add" element={<AddQuotation />} />
           <Route path="/sale/order" element={<SaleOrder />} />
           <Route path="/sale/credit-note" element={<CreditNote />} />
+          <Route path="/sale/payment-invoice" element={<PaymentInVoice />} />
           <Route path="/sale/credit-note/add" element={<AddCreditNote />} />
- 
+
           <Route path="/sale/order/add" element={<AddSaleOrder />} />
           <Route path="/sale/delivery-challan" element={<DeliveryChallan />} />
           <Route path="/sale/delivery-challan/add" element={<AddChallan />} />
