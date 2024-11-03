@@ -23,7 +23,7 @@ export const PricingSection = () => {
           </Form.Item>
           <Form.Item name="salePriceType" className="w-40">
             <FloatingLabelSelect
-              defaultValue="withoutTax"
+             
               options={[
                 { value: "withoutTax", label: "Without Tax" },
                 { value: "withTax", label: "With Tax" },
@@ -80,7 +80,7 @@ export const PricingSection = () => {
               </Form.Item>
               <Form.Item name="wholesalePriceType" className="w-40">
                 <FloatingLabelSelect
-                  defaultValue="withoutTax"
+                 
                   options={[
                     { value: "withoutTax", label: "Without Tax" },
                     { value: "withTax", label: "With Tax" },
@@ -111,7 +111,7 @@ export const PricingSection = () => {
           </Form.Item>
           <Form.Item name="purchasePriceType" className="w-40">
             <FloatingLabelSelect
-              defaultValue="withoutTax"
+              
               options={[
                 { value: "withoutTax", label: "Without Tax" },
                 { value: "withTax", label: "With Tax" },

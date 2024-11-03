@@ -1,27 +1,29 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import CounterSlice from "./test";
+
 import UserSlice from "./user";
-import QuoteOrderSlice from "./quotedOrder";
+import partySlice from "./parties";
 import AuthSlice from "./auth";
-import LrEntrySlice from "./lrEntry";
-import StockInGodownSlice from "./stocknGodown";
-import PurchaseReturnSlice from "./purchaseReturn";
+import ItemsSlice from "./items";
+import SaleInvoiceSlice from "./sale/saleInvoice";
+import QuotationSlice from "./sale/quotation";
+import SaleOrderSlice from "./sale/saleOrder";
 
 const reducers = combineReducers({
-  quotedOrder: QuoteOrderSlice,
   user: UserSlice,
-  lrEntry: LrEntrySlice,
+  party: partySlice,
   auth: AuthSlice,
-  stockInGodown: StockInGodownSlice,
-  purchaseReturn: PurchaseReturnSlice,
+  items: ItemsSlice,
+  saleInvoice: SaleInvoiceSlice,
+  quotation: QuotationSlice,
+  saleOrder: SaleOrderSlice,
 });
 
 const persistConfig = {
   key: "shreya-sw",
   storage,
-  whitelist: ["user"],
+  whitelist: ["user", "items", "saleInvoice", "party"],
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

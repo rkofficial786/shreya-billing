@@ -1,172 +1,141 @@
-import React, { useState, useRef } from 'react';
-import { 
-  Form, 
-  Input, 
-  Select, 
-  DatePicker, 
-  Table, 
-  Button, 
-  Card,
-  InputNumber,
-  Space,
-  Divider,
-  Switch,
-  Upload,
-  message,
-  Radio
-} from 'antd';
-import { 
-  PlusOutlined, 
-  DeleteOutlined, 
-  FileImageOutlined, 
-  FileTextOutlined,
-  UploadOutlined
-} from '@ant-design/icons';
-import { FloatingLabelInput, FloatingLabelSelect, FloatingLabelTextArea } from '../../../../component/input';
+import React, { useState, useRef, useEffect } from "react";
+import { Form, Button, Card, Divider, message } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
-const { Option } = Select;
+import PaymentDetails from "./PaymentDetails";
+import { SalesFormHeader } from "./Header";
+import { ItemsTable } from "./ItemTable";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createSaleInvoice,
+  getSaleInvoiceById,
+  updateSaleInvoice,
+} from "../../../../store/sale/saleInvoice";
+import { useSearchParams } from "react-router-dom";
 
 const AddSale = () => {
   const [form] = Form.useForm();
   const [items, setItems] = useState([]);
   const [fileList, setFileList] = useState([]);
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const [docList, setDocList] = useState([]);
-  const uploadRef = useRef();
-  const docRef = useRef();
+  const [isCash, setIsCash] = useState(false);
+  const dispatch = useDispatch<any>();
+  const [receivedAmount, setReceivedAmount] = useState(0);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [saleInvoiceData, setSaleInvoiceData] = useState(null);
 
-  const initialData = {
-    invoiceNumber: '2',
-    invoiceDate: '2024-10-25',
-    paymentType: 'Cash',
-    roundOff: -0.3,
-    received: 258630,
+  const transformSaleInvoiceData = (data) => {
+    if (!data) return null;
+
+    // Transform items data
+    const transformedItems = data.items.map((item, index) => ({
+      key: index + 1,
+      item: item.name,
+      quantity: item.quantity,
+      unit: "NONE",
+      price: item.pricePerUnit,
+      priceType: "withoutTax",
+      tax: "NONE",
+    }));
+
+    // Transform payment options
+    const transformedPayments = data.paymentOption.map((payment) => ({
+      type: payment.paymentType,
+      amount: Number(payment.paymentAmount),
+    }));
+
+    // Set the form data
+    const formData = {
+      invoiceNumber: data.invoiceNumber,
+      invoiceDate: dayjs(data.invoiceDate),
+      customerName: data.customerName,
+      phoneNumber: data.phone,
+      stateOfSupply: data.stateOfSupply,
+      description: data.description,
+      paymentType: transformedPayments[0]?.paymentType || "Cash",
+    };
+
+    return {
+      formData,
+      items: transformedItems,
+      payments: transformedPayments,
+      images: data.img || [],
+      documents: data.documents || [],
+    };
   };
 
-  const columns = [
-    {
-      title: '#',
-      dataIndex: 'index',
-      width: 50,
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: 'ITEM',
-      dataIndex: 'item',
-      render: (_, record) => (
-        <FloatingLabelInput 
-          label="Enter item name"
-          value={record.item}
-          onChange={(e) => handleItemChange(record.key, 'item', e.target.value)}
-        />
-      ),
-    },
-    {
-      title: 'QTY',
-      dataIndex: 'quantity',
-      width: 100,
-      render: (_, record) => (
-        <InputNumber
-          min={1}
-          className='py-2'
-          value={record.quantity}
-          onChange={(value) => handleItemChange(record.key, 'quantity', value)}
-        />
-      ),
-    },
-    {
-      title: 'UNIT',
-      dataIndex: 'unit',
-      width: 120,
-      render: (_, record) => (
-        <FloatingLabelSelect 
-          value={record.unit}
-          onChange={(value) => handleItemChange(record.key, 'unit', value)}
-        >
-          <Option value="Bag">Bag</Option>
-          <Option value="Btl">Btl</Option>
-          <Option value="NONE">NONE</Option>
-        </FloatingLabelSelect>
-      ),
-    },
-    {
-      title: 'PRICE/UNIT',
-      dataIndex: 'price',
-      width: 200,
-      render: (_, record) => (
-        <div className="flex items-start gap-2">
-        <InputNumber
-          className="w-32 py-2"
-          value={record.price}
-          onChange={(value) => handleItemChange(record.key, 'price', value)}
-        />
-        <Radio.Group 
-          value={record.priceType} 
-          onChange={(e) => handleItemChange(record.key, 'priceType', e.target.value)}
-          size="small"
-          className="flex flex-col gap-1"
-        >
-          <Radio value="withTax" className="text-xs">With Tax</Radio>
-          <Radio value="withoutTax" className="text-xs">Without Tax</Radio>
-        </Radio.Group>
-      </div>
-      ),
-    },
-    {
-      title: 'TAX',
-      dataIndex: 'tax',
-      width: 200,
-      render: (_, record) => (
-        <div className="space-y-2">
-          <FloatingLabelSelect
-            className="w-full"
-            value={record.tax}
-            onChange={(value) => handleItemChange(record.key, 'tax', value)}
-          >
-            <Option value="NONE">NONE</Option>
-            <Option value="IGST@0.25%">IGST@0.25%</Option>
-            <Option value="IGST@5%">IGST@5%</Option>
-            <Option value="IGST@12%">IGST@12%</Option>
-            <Option value="IGST@18%">IGST@18%</Option>
-          </FloatingLabelSelect>
-          {record.tax !== 'NONE' && (
-            <div className="text-xs text-gray-500">
-              Tax Amount: ₹{calculateTaxAmount(record).toFixed(2)}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: 'AMOUNT',
-      dataIndex: 'amount',
-      width: 120,
-      render: (_, record) => (
-        <div>
-          <div className="font-medium">₹{calculateFinalAmount(record).toFixed(2)}</div>
-          {record.tax !== 'NONE' && record.priceType === 'withoutTax' && (
-            <div className="text-xs text-gray-500">
-              Base: ₹{(record.quantity * record.price).toFixed(2)}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: '',
-      width: 50,
-      render: (_, record) => (
-        <Button 
-          type="text" 
-          danger 
-          icon={<DeleteOutlined />}
-          onClick={() => handleDeleteRow(record.key)}
-        />
-      ),
-    },
-  ];
+  const callGetInvoiceSaleById = async () => {
+    if (!id) return;
+
+    try {
+      const { payload } = await dispatch(getSaleInvoiceById(id));
+      if (payload.data.success) {
+        const transformedData = transformSaleInvoiceData(
+          payload.data.salesInvoice
+        );
+        setSaleInvoiceData(transformedData);
+        setIsEditMode(true);
+        console.log(transformedData, "transformed data");
+
+        // Update component state
+        form.setFieldsValue(transformedData.formData);
+        setItems(transformedData.items);
+        setPayments(transformedData.payments);
+        setFileList(transformedData.images);
+        setDocList(transformedData.documents);
+        setIsCash(transformedData.formData.paymentType === "Cash");
+        setReceivedAmount(payload.data.salesInvoice.received);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to fetch sale invoice data");
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      callGetInvoiceSaleById();
+    } else {
+      // Initialize with default values for create mode
+      setItems([
+        {
+          key: 1,
+          item: "",
+          quantity: 0,
+          unit: "NONE",
+          price: 0,
+          priceType: "withoutTax",
+          tax: "NONE",
+        },
+      ]);
+    }
+  }, [id]);
+
+  const initialData = {
+    invoiceNumber: "2",
+    invoiceDate: dayjs(),
+    paymentType: "Cash",
+    roundOff: -0.3,
+  };
+
+  const [payments, setPayments] = useState([]);
+
+  // Calculate total received amount from all payment entries
+  const totalReceivedAmount = payments.reduce(
+    (sum, payment) => sum + (payment.amount || 0),
+    0
+  );
+
+  // Update parent component's receivedAmount whenever payments change
+  React.useEffect(() => {
+    setReceivedAmount(totalReceivedAmount);
+  }, [totalReceivedAmount, setReceivedAmount]);
 
   const getTaxRate = (taxString) => {
-    if (taxString === 'NONE') return 0;
+    if (taxString === "NONE") return 0;
     const percentage = parseFloat(taxString.match(/\d+(\.\d+)?/)[0]);
     return percentage / 100;
   };
@@ -175,7 +144,7 @@ const AddSale = () => {
     const baseAmount = record.quantity * record.price;
     const taxRate = getTaxRate(record.tax);
 
-    if (record.priceType === 'withTax') {
+    if (record.priceType === "withTax") {
       return (baseAmount * taxRate) / (1 + taxRate);
     } else {
       return baseAmount * taxRate;
@@ -186,8 +155,8 @@ const AddSale = () => {
     const baseAmount = record.quantity * record.price;
     const taxRate = getTaxRate(record.tax);
 
-    if (record.priceType === 'withTax') {
-      return baseAmount; // Price already includes tax
+    if (record.priceType === "withTax") {
+      return baseAmount;
     } else {
       return baseAmount * (1 + taxRate);
     }
@@ -195,103 +164,156 @@ const AddSale = () => {
 
   const handleAddRow = () => {
     const newKey = items.length + 1;
-    setItems([...items, {
-      key: newKey,
-      item: '',
-      quantity: 0,
-      unit: 'NONE',
-      price: 0,
-      priceType: 'withoutTax',
-      tax: 'NONE',
-    }]);
+    setItems([
+      ...items,
+      {
+        key: newKey,
+        item: "",
+        quantity: 0,
+        unit: "NONE",
+        price: 0,
+        priceType: "withoutTax",
+        tax: "NONE",
+      },
+    ]);
   };
 
   const handleDeleteRow = (key) => {
-    setItems(items.filter(item => item.key !== key));
+    if (items.length === 1) {
+      message.warning("At least one item is required");
+      return;
+    }
+    setItems(items.filter((item) => item.key !== key));
   };
 
   const handleItemChange = (key, field, value) => {
-    setItems(items.map(item => 
-      item.key === key ? { ...item, [field]: value } : item
-    ));
-  };
-
-  const handleImageUpload = {
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('You can only upload image files!');
-        return false;
-      }
-      setFileList([...fileList, file]);
-      return false;
-    },
-    fileList,
-  };
-
-  const handleDocumentUpload = {
-    beforeUpload: (file) => {
-      setDocList([...docList, file]);
-      return false;
-    },
-    fileList: docList,
+    setItems(
+      items.map((item) =>
+        item.key === key ? { ...item, [field]: value } : item
+      )
+    );
   };
 
   const calculateTotal = () => {
     return items.reduce((acc, curr) => acc + calculateFinalAmount(curr), 0);
   };
 
+  const calculateBalance = () => {
+    return calculateTotal() - receivedAmount;
+  };
+
+  // New function to handle form submission
+  const handleSave = async () => {
+    try {
+      const formValues = await form.validateFields();
+      const totalInvoiceAmount = calculateTotal();
+      const balance = totalInvoiceAmount - totalReceivedAmount;
+
+      const itemData = items.map((item) => ({
+        name: item.item,
+        quantity: item.quantity,
+        pricePerUnit: item.price,
+        tax: item.tax,
+        taxAmount: calculateTaxAmount(item),
+        amount: calculateFinalAmount(item),
+      }));
+
+      const formData = new FormData();
+
+      // Add basic invoice details
+      formData.append("invoiceNumber", formValues.invoiceNumber);
+      formData.append("invoiceDate", formValues.invoiceDate.toISOString());
+      formData.append("customerName", formValues.customerName);
+      formData.append("phone", formValues.phoneNumber || "");
+      formData.append("stateOfSupply", formValues.stateOfSupply || "");
+      formData.append("invoiceAmount", totalInvoiceAmount.toString());
+      formData.append("received", totalReceivedAmount.toString());
+      formData.append("balance", balance.toString());
+      formData.append("description", formValues.description || "");
+
+      // Add payment options
+      payments.forEach((payment, index) => {
+        formData.append(`paymentOption[${index}][paymentType]`, payment.type);
+        formData.append(
+          `paymentOption[${index}][paymentAmount]`,
+          payment.amount.toString()
+        );
+      });
+
+      // Add items
+      itemData.forEach((item, index) => {
+        formData.append(`items[${index}][name]`, item.name);
+        formData.append(`items[${index}][quantity]`, item.quantity.toString());
+        formData.append(
+          `items[${index}][pricePerUnit]`,
+          item.pricePerUnit.toString()
+        );
+        formData.append(`items[${index}][tax]`, item.tax.toString());
+        formData.append(
+          `items[${index}][taxAmount]`,
+          item.taxAmount.toString()
+        );
+        formData.append(`items[${index}][amount]`, item.amount.toString());
+      });
+
+      // Add images and documents
+      fileList.forEach((file, index) => {
+        if (file.originFileObj) {
+          formData.append(`img`, file.originFileObj);
+        }
+      });
+
+      docList.forEach((doc, index) => {
+        if (doc.originFileObj) {
+          formData.append(`documents`, doc.originFileObj);
+        }
+      });
+
+      // Dispatch appropriate action based on mode
+      const action = isEditMode
+        ? updateSaleInvoice({ id, data: formData })
+        : createSaleInvoice(formData);
+      const { payload } = await dispatch(action);
+
+      if (payload.data.success) {
+        message.success(
+          `Sale invoice ${isEditMode ? "updated" : "created"} successfully`
+        );
+      } else {
+        throw new Error(payload.data.message || "Operation failed");
+      }
+    } catch (error) {
+      console.error("Error saving sale:", error);
+      message.error(
+        `Failed to ${isEditMode ? "update" : "create"} sale invoice`
+      );
+    }
+  };
+
   return (
-    <div className=" mx-auto p-2">
-      
-      <Card className="shadow-lg">
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={initialData}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Form.Item label="Search by Name/Phone">
-              <FloatingLabelSelect
-                showSearch
-                placeholder="Select customer"
-                optionFilterProp="children"
-              >
-                <Option value="customer1">Customer 1</Option>
-                <Option value="customer2">Customer 2</Option>
-              </FloatingLabelSelect>
-            </Form.Item>
-
-            <Form.Item label="Phone No.">
-              <FloatingLabelInput placeholder="Enter phone number" />
-            </Form.Item>
-
-            <Form.Item label="Invoice Number">
-              <FloatingLabelInput disabled value={initialData.invoiceNumber} />
-            </Form.Item>
-
-            <Form.Item label="Invoice Date">
-              <DatePicker className="w-full py-3" />
-            </Form.Item>
-
-            <Form.Item label="State of Supply">
-              <FloatingLabelSelect placeholder="Select state">
-                <Option value="state1">State 1</Option>
-                <Option value="state2">State 2</Option>
-              </FloatingLabelSelect>
-            </Form.Item>
-          </div>
-          <Divider />
-          <Table
-            columns={columns}
-            dataSource={items}
-            pagination={false}
-            className="my-4"
+    <div className="mx-auto p-2 ">
+      <Card className="shadow-lg overflow-x-auto">
+        <Form form={form} layout="vertical" initialValues={initialData}>
+          <SalesFormHeader
+            isCash={isCash}
+            setIsCash={setIsCash}
+            initialData={initialData}
+            form={form}
           />
 
-          <Button 
-            type="dashed" 
-            onClick={handleAddRow} 
+          <Divider />
+
+          <ItemsTable
+            items={items}
+            handleItemChange={handleItemChange}
+            handleDeleteRow={handleDeleteRow}
+            calculateTaxAmount={calculateTaxAmount}
+            calculateFinalAmount={calculateFinalAmount}
+          />
+
+          <Button
+            type="dashed"
+            onClick={handleAddRow}
             className="my-4"
             icon={<PlusOutlined />}
           >
@@ -300,67 +322,27 @@ const AddSale = () => {
 
           <Divider />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Form.Item label="Payment Type">
-                <FloatingLabelSelect defaultValue="Cash">
-                  <Option value="Cash">Cash</Option>
-                  <Option value="Credit">Credit</Option>
-                </FloatingLabelSelect>
-              </Form.Item>
+          <PaymentDetails
+            isCash={isCash}
+            receivedAmount={receivedAmount}
+            setReceivedAmount={setReceivedAmount}
+            calculateTotal={calculateTotal}
+            calculateBalance={calculateBalance}
+            setImageFileList={setFileList}
+            imageFileList={fileList}
+            docFileList={docList}
+            setDocFileList={setDocList}
+            setPayments={setPayments}
+            payments={payments}
+            form={form}
+            totalReceivedAmount={totalReceivedAmount}
+          />
 
-              <Form.Item label="Description">
-                <FloatingLabelTextArea rows={4} />
-              </Form.Item>
-
-              <Space direction="vertical" className="w-full">
-                <Upload {...handleImageUpload} className="w-full">
-                  <Button icon={<FileImageOutlined />} className="w-full">
-                    Add Image
-                  </Button>
-                </Upload>
-                <Upload {...handleDocumentUpload} className="w-full">
-                  <Button icon={<FileTextOutlined />} className="w-full">
-                    Add Document
-                  </Button>
-                </Upload>
-              </Space>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>Round Off</span>
-                <Space>
-                  <Switch defaultChecked />
-                  <span>{initialData.roundOff}</span>
-                </Space>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Total</span>
-                <span>₹{calculateTotal().toFixed(2)}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span>Received</span>
-                <Space>
-                  <Switch defaultChecked />
-                  <span>₹{initialData.received}</span>
-                </Space>
-              </div>
-
-              <div className="flex justify-between items-center font-bold">
-                <span>Balance</span>
-                <span>
-                  ₹{(initialData.received - calculateTotal()).toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-4 mt-6">
-            <Button type="default">Generate e-Invoice</Button>
-            <Button type="primary" >Save</Button>
+          <div className="flex justify-end space-x-4 mt-6 left-0 sticky bottom-0 border-t-primary-50 border-t-[2px] bg-white w-[100%] p-8 ">
+            <Button type="default">Save & New</Button>
+            <Button type="primary" onClick={handleSave}>
+              Save
+            </Button>
           </div>
         </Form>
       </Card>

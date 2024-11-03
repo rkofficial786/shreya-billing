@@ -10,14 +10,15 @@ const FloatingLabelInput = ({
   value,
   onChange,
   type = "text",
+  className,
   error,
   ...props
-}:any) => {
+}: any) => {
   const [isFocused, setIsFocused] = useState(false);
   const isOccupied = isFocused || (value && value.length !== 0);
 
   return (
-    <div className="floating-label-input">
+    <div className={`floating-label-input ${className}`}>
       <div
         className={`floating-label-wrapper ${isOccupied ? "is-occupied" : ""} ${
           error ? "has-error" : ""
@@ -48,7 +49,7 @@ const FloatingLabelInputNumber = ({
   type = "number",
   error,
   ...props
-}:any) => {
+}: any) => {
   const [isFocused, setIsFocused] = useState(false);
   const isOccupied = isFocused || (value && value.length !== 0);
 
@@ -84,7 +85,7 @@ const FloatingLabelTextArea = ({
   onChange,
   error,
   ...props
-}:any) => {
+}: any) => {
   const [isFocused, setIsFocused] = useState(false);
   const isOccupied = isFocused || (value && value.length !== 0);
 
@@ -118,19 +119,20 @@ const FloatingLabelSelect = ({
   required,
   value,
   onChange,
+  className,
   options,
   error,
   ...props
-}:any) => {
+}: any) => {
   const [isFocused, setIsFocused] = useState(false);
   const isOccupied = isFocused || value;
 
   return (
-    <div className="floating-label-input">
+    <div className={`floating-label-input ${className}`}>
       <div
-        className={`floating-label-wrapper  ${isOccupied ? "is-occupied" : ""} ${
-          error ? "has-error" : ""
-        }`}
+        className={`floating-label-wrapper  ${
+          isOccupied ? "is-occupied" : ""
+        } ${error ? "has-error" : ""}`}
       >
         <Select
           {...props}
@@ -150,4 +152,9 @@ const FloatingLabelSelect = ({
   );
 };
 
-export { FloatingLabelInput, FloatingLabelTextArea, FloatingLabelSelect  ,FloatingLabelInputNumber};
+export {
+  FloatingLabelInput,
+  FloatingLabelTextArea,
+  FloatingLabelSelect,
+  FloatingLabelInputNumber,
+};
