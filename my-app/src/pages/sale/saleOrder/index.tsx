@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, Button, Input, Empty, Dropdown, Space, Tag } from "antd";
 import {
@@ -12,23 +12,131 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import TransactionHeader from "../../../component/TransactionHeader";
+import {
+  deleteSaleOrder,
+  getAllSaleOrder,
+} from "../../../store/sale/saleOrder";
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import dayjs from "dayjs";
+
+// Define interfaces for type safety
+interface PaymentOption {
+  paymentType: string;
+  paymentAmount: string;
+  _id: string;
+}
+
+interface OrderItem {
+  _id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  pricePerUnit: number;
+  tax: string;
+  taxAmount: number;
+  amount: number;
+}
+
+interface SaleOrder {
+  _id: string;
+  orderNumber: string;
+  orderDate: string;
+  dueDate: string;
+  stateOfSupply: string;
+  party: string;
+  phone: string;
+  total: number;
+  advanceAmount: number;
+  roundOff: number;
+  totalQty: number;
+  pricePerUnitType: string;
+  items: OrderItem[];
+  paymentOption: PaymentOption[];
+  description: string;
+  img: string[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TableSaleOrder {
+  key: string;
+  party: string;
+  no: string;
+  date: string;
+  dueDate: string;
+  totalAmount: number;
+  balance: number;
+  type: string;
+  status: string;
+  originalData: SaleOrder;
+}
 
 const SaleOrder = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<any>();
+  const [orders, setOrders] = useState<TableSaleOrder[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  });
 
-  // Sample data - replace with your actual data
-  const orders = [
-    {
-      party: "Rupraj",
-      no: "1",
-      date: "26/10/2024",
-      dueDate: "26/10/2024",
-      totalAmount: 100.0,
-      balance: 100.0,
+  const transformSaleOrders = (salesOrders: SaleOrder[]): TableSaleOrder[] => {
+    return salesOrders.map((order) => ({
+      key: order._id,
+      party: order.party, // Note: You might want to show party name instead of ID
+      no: order.orderNumber,
+      date: dayjs(order.orderDate).format("DD/MM/YYYY"),
+      dueDate: dayjs(order.dueDate).format("DD/MM/YYYY"),
+      totalAmount: order.total,
+      balance: order.total - order.advanceAmount,
       type: "Sale Order",
-      status: "Order Overdue",
-    },
-  ];
+      status: getOrderStatus(order),
+      originalData: order,
+    }));
+  };
+
+  const getOrderStatus = (order: SaleOrder): string => {
+    if (order.status === "Pending") {
+      const dueDate = dayjs(order.dueDate);
+      const today = dayjs();
+      return dueDate.isBefore(today) ? "Order Overdue" : "Pending";
+    }
+    return order.status;
+  };
+
+  const callGetSaleOrder = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const { payload } = await dispatch(getAllSaleOrder(page));
+
+      if (payload.data.success) {
+        const transformedOrders = transformSaleOrders(payload.data.salesOrders);
+        setOrders(transformedOrders);
+        setPagination({
+          total: payload.data.pagination.totalSalesOrders,
+          current: payload.data.pagination.currentPage,
+          pageSize: payload.data.pagination.pageSize,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch sale orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    callGetSaleOrder();
+  }, []);
+
+  const handleTableChange = (pagination: any) => {
+    callGetSaleOrder(pagination.current, pagination.pageSize);
+  };
 
   const columns = [
     {
@@ -59,14 +167,15 @@ const SaleOrder = () => {
       dataIndex: "date",
       key: "date",
       width: 150,
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sorter: (a: TableSaleOrder, b: TableSaleOrder) =>
+        dayjs(a.date).unix() - dayjs(b.date).unix(),
     },
     {
       title: "DUE DATE",
       dataIndex: "dueDate",
       key: "dueDate",
       width: 200,
-      render: (text) => (
+      render: (text: string) => (
         <div className="flex items-center space-x-2">
           <CalendarOutlined className="text-gray-400" />
           <span>{text}</span>
@@ -83,14 +192,14 @@ const SaleOrder = () => {
       dataIndex: "totalAmount",
       key: "totalAmount",
       width: 150,
-      render: (amount) => <span>₹ {amount.toFixed(2)}</span>,
+      render: (amount: number) => <span>₹ {amount.toFixed(2)}</span>,
     },
     {
       title: "BALANCE",
       dataIndex: "balance",
       key: "balance",
       width: 150,
-      render: (amount) => (
+      render: (amount: number) => (
         <span className="font-medium">₹ {amount.toFixed(2)}</span>
       ),
     },
@@ -99,7 +208,7 @@ const SaleOrder = () => {
       dataIndex: "type",
       key: "type",
       width: 150,
-      render: (type) => (
+      render: (type: string) => (
         <Tag color="blue" className="px-3 py-1">
           {type}
         </Tag>
@@ -110,7 +219,7 @@ const SaleOrder = () => {
       dataIndex: "status",
       key: "status",
       width: 150,
-      render: (status) => (
+      render: (status: string) => (
         <Tag
           color={status === "Order Overdue" ? "orange" : "green"}
           className="px-3 py-1"
@@ -124,22 +233,39 @@ const SaleOrder = () => {
       key: "action",
       fixed: "right",
       width: 200,
-      render: () => (
+      render: (_: any, record: TableSaleOrder) => (
         <Space size="middle">
           <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
+            onClick={() => handleConvertToSale(record.originalData)}
           >
             CONVERT TO SALE
           </Button>
           <Dropdown
             menu={{
               items: [
-                { key: "1", label: "Edit Order" },
-                { key: "2", label: "Delete Order" },
-                { key: "3", label: "Download PDF" },
-                { key: "4", label: "Share Order" },
+                {
+                  key: "1",
+                  label: "Edit Order",
+                  onClick: () => navigate(`/sale/order/add?id=${record.key}`),
+                },
+                {
+                  key: "2",
+                  label: "Delete Order",
+                  onClick: () => handleDeleteOrder(record.key),
+                },
+                {
+                  key: "3",
+                  label: "Download PDF",
+                  onClick: () => handleDownloadPDF(record.key),
+                },
+                {
+                  key: "4",
+                  label: "Share Order",
+                  onClick: () => handleShareOrder(record.key),
+                },
               ],
             }}
             trigger={["click"]}
@@ -150,6 +276,34 @@ const SaleOrder = () => {
       ),
     },
   ];
+
+  const handleConvertToSale = (orderData: SaleOrder) => {
+    // Implement convert to sale logic
+    console.log("Converting to sale:", orderData);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const { payload } = await dispatch(deleteSaleOrder(orderId));
+      if (payload.data.success) {
+        toast.success("Order deleted Successfully");
+        callGetSaleOrder();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("Deleting order:", orderId);
+  };
+
+  const handleDownloadPDF = (orderId: string) => {
+    // Implement PDF download logic
+    console.log("Downloading PDF for order:", orderId);
+  };
+
+  const handleShareOrder = (orderId: string) => {
+    // Implement share logic
+    console.log("Sharing order:", orderId);
+  };
 
   const EmptyState = () => (
     <div className="text-center py-16">
@@ -179,11 +333,10 @@ const SaleOrder = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-  <TransactionHeader
-  title="Sale Orders"
-  subtitle="View and Manage Your Sales Orders"
-/>
-
+      <TransactionHeader
+        title="Sale Orders"
+        subtitle="View and Manage Your Sales Orders"
+      />
 
       <div className="bg-white p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
@@ -193,7 +346,6 @@ const SaleOrder = () => {
             icon={<PlusOutlined />}
             onClick={() => navigate("/sale/order/add")}
             size="large"
-           
           >
             Add Sale Order
           </Button>
@@ -213,15 +365,16 @@ const SaleOrder = () => {
         <Table
           columns={columns}
           dataSource={orders}
+          loading={loading}
           locale={{
             emptyText: <EmptyState />,
           }}
           pagination={{
-            total: orders.length,
-            pageSize: 10,
+            ...pagination,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
           }}
+          onChange={handleTableChange}
           scroll={{ x: 1500, y: "calc(100vh - 280px)" }}
           className="bg-white shadow-sm rounded-lg"
           sticky

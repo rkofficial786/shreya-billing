@@ -1,8 +1,16 @@
 //@ts-nocheck
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Button, Input, Empty, Dropdown, Space, Tag } from "antd";
+import {
+  Table,
+  Button,
+  Input,
+  Empty,
+  Dropdown,
+  Space,
+  Tag,
+  message,
+} from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -13,21 +21,57 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import TransactionHeader from "../../../component/TransactionHeader";
+import { useDispatch } from "react-redux";
+import {
+  deleteQuotation,
+  getAllQuotation,
+} from "../../../store/sale/quotation";
+import toast from "react-hot-toast";
 
 const Estimates = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [quotationData, setQuotationData] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
-  // Sample data - replace with your actual data
-  const quotations = [
-    {
-      date: "26/10/2024",
-      referenceNo: "1",
-      name: "Rupraj",
-      totalAmount: 100.0,
-      balance: 100.0,
-      status: "Quotation Open",
-    },
-  ];
+  const callGetQuotation = async () => {
+    try {
+      const { payload } = await dispatch(getAllQuotation());
+      console.log(payload, "payload hai");
+
+      if (payload.data.success) {
+        // Transform the data to match the table structure
+        const transformedData = payload.data.quotations.map((quotation) => ({
+          key: quotation._id,
+          date: new Date(quotation.invoiceDate).toLocaleDateString("en-GB"),
+          referenceNo: quotation.refNumber,
+          name: quotation.items[0]?.name || "N/A",
+          totalAmount: quotation.total,
+          balance: quotation.total,
+          status: "Quotation Open",
+          rawData: quotation,
+        }));
+
+        setQuotationData(transformedData);
+        setPagination({
+          current: payload.data.pagination.currentPage,
+          pageSize: payload.data.pagination.pageSize,
+          total: payload.data.pagination.totalQuotations,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to fetch quotations");
+    }
+  };
+
+  useEffect(() => {
+    callGetQuotation();
+  }, []);
 
   const columns = [
     {
@@ -40,7 +84,9 @@ const Estimates = () => {
       dataIndex: "date",
       key: "date",
       width: 150,
-      sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sorter: (a, b) =>
+        new Date(a.date.split("/").reverse().join("-")) -
+        new Date(b.date.split("/").reverse().join("-")),
       render: (text) => (
         <div className="flex items-center space-x-2">
           <CalendarOutlined className="text-gray-400" />
@@ -123,24 +169,33 @@ const Estimates = () => {
       key: "action",
       fixed: "right",
       width: 180,
-      render: () => (
+      render: (_, record) => (
         <Space size="middle">
           <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
+            onClick={() => handleConvert(record.key)}
           >
             CONVERT
           </Button>
           <Dropdown
             menu={{
               items: [
-                { key: "1", label: "Edit Quotation" },
-                { key: "2", label: "Delete Quotation" },
+                {
+                  key: "1",
+                  label: "Edit Quotation",
+                  onClick: () => navigate(`/sale/quotation/add?id=${record.key}`),
+                },
+                {
+                  key: "2",
+                  label: "Delete Quotation",
+                  onClick: () => handleDelete(record.key),
+                },
                 { key: "3", label: "Download PDF" },
-                { key: "4", label: "Send via Email" },
-                { key: "5", label: "Mark as Accepted" },
-                { key: "6", label: "Mark as Rejected" },
+                // { key: "4", label: "Send via Email" },
+                // { key: "5", label: "Mark as Accepted" },
+                // { key: "6", label: "Mark as Rejected" },
               ],
             }}
             trigger={["click"]}
@@ -151,6 +206,23 @@ const Estimates = () => {
       ),
     },
   ];
+
+  const handleConvert = (id) => {
+    // Add your convert logic here
+    console.log("Converting quotation:", id);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const { payload } = await dispatch(deleteQuotation(id));
+      if (payload.data.success) {
+        toast.success("Quotation Deleted Successfully");
+        callGetQuotation();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const EmptyState = () => (
     <div className="text-center py-16">
@@ -168,7 +240,7 @@ const Estimates = () => {
               icon={<PlusOutlined />}
               onClick={() => navigate("/sale/quotation/add")}
               size="large"
-              className="mt-4 "
+              className="mt-4"
             >
               Create Estimate
             </Button>
@@ -180,7 +252,7 @@ const Estimates = () => {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      <TransactionHeader title="Estimates & Quotations"/>
+      <TransactionHeader title="Estimates & Quotations" />
 
       <div className="bg-white p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
@@ -208,13 +280,12 @@ const Estimates = () => {
       <div className="flex-1 p-6">
         <Table
           columns={columns}
-          dataSource={quotations}
+          dataSource={quotationData}
           locale={{
             emptyText: <EmptyState />,
           }}
           pagination={{
-            total: quotations.length,
-            pageSize: 10,
+            ...pagination,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
           }}

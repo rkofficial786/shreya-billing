@@ -15,6 +15,9 @@ export const ItemsTable = ({
   calculateTaxAmount,
   calculateFinalAmount,
 }) => {
+
+
+  
   const columns = [
     {
       title: "#",

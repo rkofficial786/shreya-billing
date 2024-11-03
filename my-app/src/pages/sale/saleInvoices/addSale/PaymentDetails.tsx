@@ -109,7 +109,8 @@ const PaymentDetails = ({
         uid: file.uid,
         name: file.name,
         status: "done",
-        url: URL.createObjectURL(file),
+        originFileObj: file, // Keep the original file object
+        url: URL.createObjectURL(file), // For preview only
       };
 
       if (type === "image") {

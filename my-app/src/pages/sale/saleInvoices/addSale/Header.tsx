@@ -20,6 +20,8 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
     });
   };
 
+
+ 
   return (
     <>
       <div className="flex justify-between mb-4 gap-10">

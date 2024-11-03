@@ -38,6 +38,8 @@ const PaymentDetails = ({
   payments,
   totalReceivedAmount,
   form,
+  existingImg,
+  setExistingImg,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
 
@@ -97,6 +99,7 @@ const PaymentDetails = ({
       const newFile = {
         uid: file.uid,
         name: file.name,
+        originFileObj: file,
         status: "done",
         url: URL.createObjectURL(file),
       };
@@ -110,6 +113,8 @@ const PaymentDetails = ({
   };
 
   const handleRemove = (file, type) => {
+    const matchingFile = existingImg.filter((item) => item != file.url);
+    setExistingImg(matchingFile);
     if (type === "image") {
       setImageFileList((prev) => prev.filter((item) => item.uid !== file.uid));
     } else {
@@ -191,7 +196,6 @@ const PaymentDetails = ({
             <FloatingLabelTextArea
               onChange={handleDescriptionChange}
               rows={4}
-              
             />
             <Button
               type="text"
@@ -216,7 +220,7 @@ const PaymentDetails = ({
         <hr />
 
         {/* File upload buttons */}
-        <Space direction="vertical" className="w-full">
+        <Space direction="vertical" className="w-5/12">
           <Upload {...uploadProps("image")} className="w-full">
             <Button icon={<FileImageOutlined />} className="w-full">
               Add Image
@@ -247,7 +251,7 @@ const PaymentDetails = ({
 
         <div className="flex justify-between items-center">
           <span>Advance Amount</span>
-          <span>₹{totalReceivedAmount.toFixed(2)}</span>
+          <span>₹{totalReceivedAmount}</span>
         </div>
 
         <div className="flex justify-between items-center font-bold">

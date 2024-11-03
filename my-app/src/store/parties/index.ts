@@ -8,7 +8,7 @@ import {
 } from "./actions";
 
 const initialState = {
-  currentOrder: null,
+  parties: [],
 };
 
 export const partySlice = createSlice({
@@ -23,7 +23,13 @@ export const partySlice = createSlice({
     builder.addCase(getPartyById.fulfilled, (state, { payload }) => {});
     builder.addCase(deleteParty.fulfilled, (state, { payload }) => {});
     builder.addCase(updateParty.fulfilled, (state, { payload }) => {});
-    builder.addCase(getAllParties.fulfilled, (state, { payload }) => {});
+    builder.addCase(getAllParties.fulfilled, (state, { payload }) => {
+      if (payload.status == 200) {
+        if (payload.data.success) {
+          state.parties = payload.data.parties;
+        }
+      }
+    });
     builder.addCase(createParty.fulfilled, (state, { payload }) => {});
   },
 });

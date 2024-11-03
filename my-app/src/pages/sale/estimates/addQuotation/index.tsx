@@ -1,11 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Card, Divider, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-
 import PaymentDetails from "./PaymentDetails";
 import { SalesFormHeader } from "./Header";
 import { ItemsTable } from "./ItemTable";
+import { useDispatch } from "react-redux";
+import {
+  createQuotation,
+  getQuotationById,
+  updateQuotation,
+} from "../../../../store/sale/quotation";
+import toast from "react-hot-toast";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const AddQuotation = () => {
   const [form] = Form.useForm();
@@ -13,9 +20,13 @@ const AddQuotation = () => {
   const [fileList, setFileList] = useState([]);
   const [docList, setDocList] = useState([]);
   const [isCash, setIsCash] = useState(false);
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const [receivedAmount, setReceivedAmount] = useState(0);
-  const uploadRef = useRef();
-  const docRef = useRef();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
+  const [existingDocs, setExistingDocs] = useState([]);
 
   const initialData = {
     invoiceNumber: "2",
@@ -25,31 +36,88 @@ const AddQuotation = () => {
   };
 
   useEffect(() => {
-    setItems([
-      {
-        key: 1,
-        item: "",
-        quantity: 0,
-        unit: "NONE",
-        price: 0,
-        priceType: "withoutTax",
-        tax: "NONE",
-      },
-    ]);
+    if (!id) {
+      setItems([
+        {
+          key: 1,
+          id: "",
+          item: "",
+          quantity: 0,
+          unit: "NONE",
+          price: 0,
+          priceType: "withoutTax",
+          tax: "NONE",
+        },
+      ]);
+    }
   }, []);
 
   const [payments, setPayments] = useState([]);
 
-  // Calculate total received amount from all payment entries
   const totalReceivedAmount = payments.reduce(
     (sum, payment) => sum + (payment.amount || 0),
     0
   );
 
-  // Update parent component's receivedAmount whenever payments change
-  React.useEffect(() => {
+  const mapQuotationDataToForm = (data) => {
+    const mappedItems = data.items.map((item, index) => ({
+      key: index + 1,
+      id: item._id,
+      item: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      price: item.pricePerUnit,
+      priceType:
+        data.pricePerUnitType === "With Tax" ? "withTax" : "withoutTax",
+      tax: item.tax,
+    }));
+
+    setItems(mappedItems);
+
+    // If there are documents, create file list
+    if (data.document && data.document.length > 0) {
+      const mappedFiles = data.document.map((url, index) => ({
+        uid: `-${index}`,
+        name: `Document ${index + 1}`,
+        status: "done",
+        url: url,
+      }));
+      setFileList(mappedFiles);
+    }
+
+    return {
+      customerName: data.party,
+      invoiceDate: dayjs(data.invoiceDate),
+      referenceNumber: data.refNumber,
+      roundOff: data.roundOff,
+    };
+  };
+
+  const callGetQuotationById = async () => {
+    if (!id) return;
+
+    try {
+      const { payload } = await dispatch(getQuotationById(id));
+
+      if (payload.data.success) {
+        setExistingDocs(payload.data.quotation.document);
+        const formData = mapQuotationDataToForm(payload.data.quotation);
+        form.setFieldsValue(formData);
+        setIsEditMode(true);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to fetch quotation data");
+    }
+  };
+
+  useEffect(() => {
+    callGetQuotationById();
+  }, [id]);
+
+  useEffect(() => {
     setReceivedAmount(totalReceivedAmount);
-  }, [totalReceivedAmount, setReceivedAmount]);
+  }, [totalReceivedAmount]);
 
   const getTaxRate = (taxString) => {
     if (taxString === "NONE") return 0;
@@ -103,14 +171,6 @@ const AddQuotation = () => {
     setItems(items.filter((item) => item.key !== key));
   };
 
-  const handleItemChange = (key, field, value) => {
-    setItems(
-      items.map((item) =>
-        item.key === key ? { ...item, [field]: value } : item
-      )
-    );
-  };
-
   const calculateTotal = () => {
     return items
       .reduce((acc, curr) => acc + calculateFinalAmount(curr), 0)
@@ -121,48 +181,88 @@ const AddQuotation = () => {
     return calculateTotal() - receivedAmount;
   };
 
-  // New function to handle form submission
+  const prepareQuotationData = (formValues) => {
+    const quotationItems = items.map((item) => ({
+      _id: item.id || undefined,
+      name: item.item,
+      quantity: item.quantity,
+      unit: item.unit,
+      pricePerUnit: item.price,
+      tax: item.tax,
+      taxAmount: calculateTaxAmount(item),
+      amount: calculateFinalAmount(item),
+    }));
+
+    const totalAmount = quotationItems.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+
+    const quotationData = {
+      refNumber: formValues.referenceNumber,
+      invoiceDate: formValues.invoiceDate
+        ? formValues.invoiceDate.toDate()
+        : new Date(),
+      party: formValues.customerName,
+      total: Number(totalAmount.toFixed(2)),
+      roundOff: formValues.roundOff || 0,
+      totalQty: quotationItems.reduce((sum, item) => sum + item.quantity, 0),
+      pricePerUnitType:
+        items[0]?.priceType === "withTax" ? "With Tax" : "Without Tax",
+      items: quotationItems,
+    };
+
+    return quotationData;
+  };
+
   const handleSave = async () => {
     try {
       const formValues = await form.validateFields();
-      console.log(formValues, "form");
+      const quotationData = prepareQuotationData(formValues);
+      const formData = new FormData();
 
-      const saleData = {
-        customerInfo: {
-          customerName: formValues.customerName,
-        },
-        invoiceDetails: {
-          referenceNumber: formValues.referenceNumber,
-          invoiceDate: formValues.invoiceDate.toISOString(),
-          stateOfSupply: formValues.stateOfSupply,
-        },
+      Object.keys(quotationData).forEach((key) => {
+        if (key === "items") {
+          formData.append(key, JSON.stringify(quotationData.items));
+        } else if (key === "invoiceDate") {
+          formData.append(key, quotationData[key].toISOString());
+        } else {
+          formData.append(key, quotationData[key]);
+        }
+      });
+      if (isEditMode) {
+        formData.append("existingDocument", JSON.stringify(existingDocs));
+      }
+      fileList.forEach((file) => {
+        if (file.originFileObj) {
+          formData.append(`img`, file.originFileObj, file.name);
+        }
+      });
 
-        paymentDetails: {
-          total: calculateTotal(),
-          roundOff: formValues.roundOff || 0,
-          description: formValues.description,
-        },
+      const action = isEditMode
+        ? updateQuotation({ id, data: formData })
+        : createQuotation(formData);
 
-        attachments: {
-          images: fileList.map((file) => ({
-            name: file.name,
-            url: file.url,
-            uid: file.uid,
-            type: file.type,
-          })),
-        },
-      };
+      const { payload } = await dispatch(action);
 
-      console.log("Sale Data:", saleData);
-      message.success("Sale data collected successfully");
+      if (payload.data.success) {
+        message.success(
+          `Quotation ${isEditMode ? "updated" : "created"} successfully`
+        );
+        navigate("/sale/quotation");
+      } else {
+        toast.error(payload.data.msg);
+      }
     } catch (error) {
-      console.error("Error saving sale:", error);
-      message.error("Failed to save sale data");
+      console.error("Error saving quotation:", error);
+      message.error(
+        `Failed to ${isEditMode ? "update" : "save"} quotation data`
+      );
     }
   };
 
   return (
-    <div className="mx-auto p-2 ">
+    <div className="mx-auto p-2">
       <Card className="shadow-lg overflow-x-auto">
         <Form form={form} layout="vertical" initialValues={initialData}>
           <SalesFormHeader
@@ -170,16 +270,18 @@ const AddQuotation = () => {
             setIsCash={setIsCash}
             initialData={initialData}
             form={form}
+            // isEditMode={isEditMode}
           />
 
           <Divider />
 
           <ItemsTable
+            setItems={setItems}
             items={items}
-            handleItemChange={handleItemChange}
             handleDeleteRow={handleDeleteRow}
             calculateTaxAmount={calculateTaxAmount}
             calculateFinalAmount={calculateFinalAmount}
+            // isEditMode={isEditMode}
           />
 
           <Button
@@ -207,12 +309,15 @@ const AddQuotation = () => {
             payments={payments}
             form={form}
             totalReceivedAmount={totalReceivedAmount}
+            setExistingDocs={setExistingDocs}
+            existingDocs={existingDocs}
+            // isEditMode={isEditMode}
           />
 
-          <div className="flex justify-end space-x-4 mt-6 left-0 sticky bottom-0 border-t-primary-50 border-t-[2px] bg-white w-[100%] p-8 ">
+          <div className="flex justify-end space-x-4 mt-6 left-0 sticky bottom-0 border-t-primary-50 border-t-[2px] bg-white w-[100%] p-8">
             <Button type="default">Save & New</Button>
             <Button type="primary" onClick={handleSave}>
-              Save
+              {isEditMode ? "Update" : "Save"}
             </Button>
           </div>
         </Form>
