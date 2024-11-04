@@ -1,41 +1,67 @@
-import { Button, Divider, Form } from "antd";
+import { Button, Card, Divider, Form } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   FloatingLabelInput,
   FloatingLabelSelect,
 } from "../../../component/input";
+import Barcode from "react-barcode";
+import { useState } from "react";
 
-interface BasicDetailsProps {
-  onUnitClick: () => void;
-  generateRandomCode: any;
-}
+const BarcodeDisplay: React.FC<{
+  itemCode?: string;
+  itemDetails?: any;
+}> = ({ itemCode, itemDetails }) => {
+  if (!itemCode) return null;
+
+  return (
+    
+      <div className="mt-4 flex">
+        <Barcode value={itemCode} />
+      </div>
+    
+  );
+};
 
 export const BasicDetails = ({
   onUnitClick,
   generateRandomCode,
-}: BasicDetailsProps) => {
+  form,
+}: any) => {
+  const [itemDetails, setItemDetails] = useState<any>(null);
+
+  const handleFormChange = () => {
+    const values = form.getFieldsValue();
+    setItemDetails(values);
+  };
+
+  const setBarCode = () => {
+    generateRandomCode();
+    handleFormChange();
+  };
   return (
     <div className="grid grid-cols-2 gap-6">
       <Form.Item
         name="itemName"
-        label="Item Name"
+        className="mb-0"
         rules={[{ required: true, message: "Please enter item name" }]}
       >
-        <FloatingLabelInput label="Enter item name" />
+        <FloatingLabelInput label="Enter item name" className="mb-0" />
       </Form.Item>
 
       <div className="flex gap-4">
-        <Form.Item name="itemHSN" label="Item HSN" className="flex-1">
+        <Form.Item name="itemHSN" className="flex-1 mb-0">
           <FloatingLabelInput
+            className="mb-0"
             label="Search HSN"
             suffix={<SearchOutlined className="text-gray-400" />}
           />
         </Form.Item>
 
-        <Form.Item name="unit" label="Unit" className="flex-1">
+        <Form.Item name="unit" className="flex-1 mb-0">
           <FloatingLabelInput
             label="Select Unit"
             readOnly
+            className="mb-0"
             onClick={onUnitClick}
             suffix={
               <Button type="link" className="p-0 h-auto" onClick={onUnitClick}>
@@ -46,10 +72,11 @@ export const BasicDetails = ({
         </Form.Item>
       </div>
 
-      <Form.Item name="category" label="Category">
+      <Form.Item name="category" className="mb-0">
         <FloatingLabelSelect
           placeholder="Select category"
           allowClear
+          className="mb-0"
           showSearch
           dropdownRender={(menu) => (
             <div>
@@ -67,21 +94,26 @@ export const BasicDetails = ({
         />
       </Form.Item>
 
-      <Form.Item name="itemCode" label="Item Code">
+      <Form.Item name="itemCode" className="mb-0">
         <FloatingLabelInput
           label="Enter code"
-          className="py-2"
+          className=" mb-0"
           suffix={
             <Button
               type="link"
-              className="p-0 h-auto"
-              onClick={generateRandomCode}
+              variant="link"
+              className="p-0 h-auto "
+              onClick={setBarCode}
             >
               Assign Code
             </Button>
           }
         />
       </Form.Item>
+      <BarcodeDisplay
+        itemCode={itemDetails?.itemCode}
+        itemDetails={itemDetails}
+      />
     </div>
   );
 };

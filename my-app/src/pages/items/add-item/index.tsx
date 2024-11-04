@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form, Button, Tabs, Space, Typography, Card } from "antd";
+import { Form, Button, Tabs, Space, Typography, Card, Divider } from "antd";
 import { SettingOutlined, CloseOutlined } from "@ant-design/icons";
 import { ItemTypeSwitch } from "./ItemTypeSwitch";
 
@@ -329,7 +329,9 @@ const AddItemPage = () => {
           <BasicDetails
             generateRandomCode={generateRandomCode}
             onUnitClick={() => setUnitModalVisible(true)}
+            form={form}
           />
+          <Divider/>
 
           <Form.Item name="images" label="Item Images" className="col-span-2">
             <ImageUploadSection fileList={fileList} setFileList={setFileList} />

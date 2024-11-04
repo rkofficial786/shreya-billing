@@ -15,6 +15,8 @@ import CreditNote from "../pages/sale/creditNote";
 import AddCreditNote from "../pages/sale/creditNote/addCreditNote";
 import PaymentInVoice from "../pages/sale/payymentIn";
 import Dashboard from "../pages/dashboard";
+import Pos from "../pages/sale/POS";
+import Inventory from "../pages/inventory";
 
 function Router() {
   return (
@@ -26,6 +28,7 @@ function Router() {
           <Route path="/party" element={<Party />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/items" element={<Items />} />
+          <Route path="/inventory" element={<Inventory />} />
           <Route path="/items/add-item" element={<AddItemPage />} />
           <Route path="/sale/invoices" element={<SaleInvoices />} />
           <Route path="/sale/invoices/add-sale" element={<AddSale />} />
@@ -39,6 +42,7 @@ function Router() {
           <Route path="/sale/order/add" element={<AddSaleOrder />} />
           <Route path="/sale/delivery-challan" element={<DeliveryChallan />} />
           <Route path="/sale/delivery-challan/add" element={<AddChallan />} />
+          <Route path="/sale/pos" element={<Pos />} />
           {/* Add more routes here as needed */}
         </Route>
       </Routes>

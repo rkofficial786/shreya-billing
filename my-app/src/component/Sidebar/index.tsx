@@ -14,6 +14,7 @@ import {
   FaUser,
   FaShoppingBag,
   FaStamp,
+  FaProductHunt,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,6 +22,7 @@ import { setTheme } from "../../store/user";
 import { ColorPicker } from "antd";
 import ThemeManager from "../ThemeManager";
 import ThemeSwitcherModal from "../ThemeSwitchModal";
+import { AiFillShop } from "react-icons/ai";
 
 interface SidebarItem {
   icon: React.ReactNode;
@@ -83,6 +85,11 @@ const Sidebar: React.FC = () => {
       path: "/items",
     },
     {
+      icon: <AiFillShop size={20} />,
+      text: "Inventory",
+      path: "/inventory",
+    },
+    {
       icon: <FaStamp size={20} />,
       text: "Sale",
       path: "/sale",
@@ -95,6 +102,7 @@ const Sidebar: React.FC = () => {
         { text: "Sale Order", path: "/sale/order" },
         { text: "Deliver Challan", path: "/sale/delivery-challan" },
         { text: "Sale Return/CR", path: "/sale/credit-note" },
+        { text: "POS", path: "/sale/pos" },
       ],
     },
     // {

@@ -185,7 +185,8 @@ const Estimates = () => {
                 {
                   key: "1",
                   label: "Edit Quotation",
-                  onClick: () => navigate(`/sale/quotation/add?id=${record.key}`),
+                  onClick: () =>
+                    navigate(`/sale/quotation/add?id=${record.key}`),
                 },
                 {
                   key: "2",
