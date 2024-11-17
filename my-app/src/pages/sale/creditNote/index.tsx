@@ -1,5 +1,3 @@
-//@ts-nocheck
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,9 +16,17 @@ import {
   MoreOutlined,
   FileExcelOutlined,
   PrinterOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import TransactionHeader from "../../../component/TransactionHeader";
+import { useDispatch } from "react-redux";
+import {
+  deleteSaleReturn,
+  getAllSaleReturn,
+} from "../../../store/sale/saleReturn";
+import toast from "react-hot-toast";
+import InvoicePreviewModal from "./InvoiceTempelate";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -32,60 +38,55 @@ const CreditNote = () => {
   const [dateRange, setDateRange] = useState([dayjs(), dayjs()]);
   const [selectedFirm, setSelectedFirm] = useState("ALL FIRMS");
   const [searchText, setSearchText] = useState("");
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const dispatch = useDispatch<any>();
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  });
 
-  // Dummy data for demonstration
-  const dummyData = [
-    {
-      key: "1",
-      date: "2024-10-15",
-      refNo: "CN-001",
-      partyName: "ABC Trading Co.",
-      categoryName: "Electronics",
-      type: "Return",
-      total: 5000.0,
-      receivedPaid: 5000.0,
-      balance: 0.0,
-    },
-    {
-      key: "2",
-      date: "2024-10-16",
-      refNo: "CN-002",
-      partyName: "XYZ Enterprises",
-      categoryName: "Furniture",
-      type: "Discount",
-      total: 7500.0,
-      receivedPaid: 5000.0,
-      balance: 2500.0,
-    },
-    {
-      key: "3",
-      date: "2024-10-17",
-      refNo: "CN-003",
-      partyName: "Global Imports",
-      categoryName: "Textiles",
-      type: "Return",
-      total: 3000.0,
-      receivedPaid: 3000.0,
-      balance: 0.0,
-    },
-  ];
+  const callGetSaleOrder = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const { payload } = await dispatch(getAllSaleReturn(page));
+      console.log(payload, "payload");
 
-  // Simulating API call
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setData(dummyData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
+      if (payload.data.success) {
+        const tableData = payload.data.salesReturns.map((item, index) => ({
+          key: index + 1,
+          id: item._id,
+          date: dayjs(item.date).format("YYYY-MM-DD"),
+          refNo: item.returnNumber,
+          partyName: item.party.name,
+          categoryName: "Electronics", // Assuming all items are in the Electronics category
+          type: item.status,
+          total: item.total,
+          receivedPaid: item.paymentOption.reduce(
+            (acc, payment) => acc + parseFloat(payment.paymentAmount),
+            0
+          ),
+          balance: item.total,
+          originalData: item,
+        }));
+        setData(tableData);
+        setPagination({
+          total: payload.data.pagination.totalSalesOrders,
+          current: payload.data.pagination.currentPage,
+          pageSize: payload.data.pagination.pageSize,
+        });
       }
-    };
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch sale orders");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    callGetSaleOrder();
   }, []);
 
   const columns = [
@@ -144,18 +145,30 @@ const CreditNote = () => {
       render: (value) => `₹ ${value.toFixed(2)}`,
     },
     {
-      title: "PRINT/SHARE",
+      title: "ACTIONS",
       key: "actions",
       render: (_, record) => (
         <Dropdown
-          overlay={
-            <Menu>
-              <Menu.Item key="print" icon={<PrinterOutlined />}>
-                Print
-              </Menu.Item>
-              <Menu.Item key="share">Share</Menu.Item>
-            </Menu>
-          }
+          menu={{
+            items: [
+              {
+                key: "1",
+                label: "Edit Order",
+                onClick: () =>
+                  navigate(`/sale/credit-note/add?id=${record.id}`),
+              },
+              {
+                key: "2",
+                label: "Delete Order",
+                onClick: () => handleDeleteOrder(record.id),
+              },
+              {
+                key: "3",
+                label: "Download PDF",
+                onClick: () => handleDownloadPDF(record),
+              },
+            ],
+          }}
           trigger={["click"]}
         >
           <Button type="text" icon={<MoreOutlined />} />
@@ -163,6 +176,34 @@ const CreditNote = () => {
       ),
     },
   ];
+
+  const handleConvertToSale = (orderData) => {
+    // Implement convert to sale logic
+    console.log("Converting to sale:", orderData);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const { payload } = await dispatch(deleteSaleReturn(orderId));
+      if (payload.data.success) {
+        toast.success("Order deleted Successfully");
+        callGetSaleOrder();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("Deleting order:", orderId);
+  };
+
+  const handleDownloadPDF = (record: any) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record.originalData);
+  };
+
+  const handleShareOrder = (orderId: string) => {
+    // Implement share logic
+    console.log("Sharing order:", orderId);
+  };
 
   const calculateTotals = () => {
     return data.reduce(
@@ -196,27 +237,18 @@ const CreditNote = () => {
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded">
             <Typography.Text>Between</Typography.Text>
             <RangePicker
+              // @ts-ignore
               value={dateRange}
               onChange={setDateRange}
               format="DD/MM/YYYY"
             />
           </div>
-
-          <Select
-            value={selectedFirm}
-            onChange={setSelectedFirm}
-            className="w-40"
-          >
-            <Option value="ALL FIRMS">ALL FIRMS</Option>
-            <Option value="firm1">Firm 1</Option>
-            <Option value="firm2">Firm 2</Option>
-          </Select>
         </div>
 
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button icon={<FileExcelOutlined />}>Excel Report</Button>
           <Button icon={<PrinterOutlined />}>Print</Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Search and Add Button */}
@@ -231,20 +263,20 @@ const CreditNote = () => {
         <Button
           type="primary"
           onClick={() => navigate("/sale/credit-note/add")}
-          className="bg-blue-500"
         >
-          Add Credit Note
+          + Add Credit Note
         </Button>
       </div>
 
       {/* Main Table */}
       <Table
+        // @ts-ignore
         columns={columns}
         dataSource={data}
         loading={loading}
         pagination={{
-          total: data.length,
-          pageSize: 10,
+          ...pagination,
+          showSizeChanger: true,
           showTotal: (total) => `Total ${total} items`,
         }}
         scroll={{ x: true }}
@@ -255,6 +287,12 @@ const CreditNote = () => {
         <div>Total Amount: ₹ {totals.total.toFixed(2)}</div>
         <div>Balance: ₹ {totals.balance.toFixed(2)}</div>
       </div>
+
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+      />
     </div>
   );
 };

@@ -18,6 +18,14 @@ export const getAllItems = createAsyncThunk(`/getAllItems`, async () => {
   return { status, data };
 });
 
+export const getAllItemsBySearch = createAsyncThunk(
+  `/getAllItemsBySearch`,
+  async (search:any) => {
+    const { status, data } = await api.get(`/api/items?search=${search}`);
+    return { status, data };
+  }
+);
+
 export const deleteItems = createAsyncThunk(
   `/deleteItems`,
   async (param: any) => {

@@ -27,11 +27,15 @@ import {
   getAllQuotation,
 } from "../../../store/sale/quotation";
 import toast from "react-hot-toast";
+import InvoicePreviewModal, { handleInvoiceAction } from "./InvoiceTempelate";
 
 const Estimates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [quotationData, setQuotationData] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState({});
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -193,7 +197,11 @@ const Estimates = () => {
                   label: "Delete Quotation",
                   onClick: () => handleDelete(record.key),
                 },
-                { key: "3", label: "Download PDF" },
+                {
+                  key: "3",
+                  label: "Download PDF",
+                  onClick: () => handleInvoiceAction(record),
+                },
                 // { key: "4", label: "Send via Email" },
                 // { key: "5", label: "Mark as Accepted" },
                 // { key: "6", label: "Mark as Rejected" },
@@ -208,6 +216,10 @@ const Estimates = () => {
     },
   ];
 
+  const handleInvoiceAction = (record) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record);
+  };
   const handleConvert = (id) => {
     // Add your convert logic here
     console.log("Converting quotation:", id);
@@ -309,6 +321,12 @@ const Estimates = () => {
           }
         />
       </div>
+
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+      />
     </div>
   );
 };

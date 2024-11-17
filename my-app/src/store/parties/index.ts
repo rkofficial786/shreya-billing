@@ -28,6 +28,9 @@ export const partySlice = createSlice({
         if (payload.data.success) {
           state.parties = payload.data.parties;
         }
+        else{
+          state.parties=[]
+        }
       }
     });
     builder.addCase(createParty.fulfilled, (state, { payload }) => {});

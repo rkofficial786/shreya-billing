@@ -37,6 +37,8 @@ const PaymentDetails = ({
   setPayments,
   payments,
   totalReceivedAmount,
+  existingImage,
+  setExistingImage,
   form,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -54,7 +56,7 @@ const PaymentDetails = ({
   const handleRemoveDescription = () => {
     // Clear the description field and hide the textarea
     form.setFieldsValue({
-      description: '',
+      description: "",
     });
     setShowDescription(false);
   };
@@ -98,6 +100,7 @@ const PaymentDetails = ({
         uid: file.uid,
         name: file.name,
         status: "done",
+        originFileObj: file,
         url: URL.createObjectURL(file),
       };
 
@@ -110,6 +113,8 @@ const PaymentDetails = ({
   };
 
   const handleRemove = (file, type) => {
+    const matchingFile = existingImage.filter((item) => item != file.url);
+    setExistingImage(matchingFile);
     if (type === "image") {
       setImageFileList((prev) => prev.filter((item) => item.uid !== file.uid));
     } else {

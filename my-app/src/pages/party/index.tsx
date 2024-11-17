@@ -172,24 +172,53 @@ const Party = () => {
     });
   };
 
+  console.log(selectedParty, "selelctd party");
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
       const createPayload = (values) => {
-        const payloadApi = {
-          gstin: values.gstin,
-          phone: values.phoneNumber,
+        // Start with existing party data
+        const existingData = {
+          name: selectedParty.name,
+          gstin: selectedParty.gstin,
+          phone: selectedParty.phone,
           gstAndAddress: {
-            billingAddress: values.addressLine1 || undefined,
-            email: values.email || undefined,
+            gstType: selectedParty.gstAndAddress?.gstType,
+            state: selectedParty.gstAndAddress?.state,
+            email: selectedParty.gstAndAddress?.email,
+            billingAddress: selectedParty.gstAndAddress?.billingAddress,
+            shipping: selectedParty.gstAndAddress?.shipping,
           },
           creditAndBlance: {
-            limit: values.creditLimit ? Number(values.creditLimit) : undefined,
+            openingBalance: selectedParty.creditAndBlance?.openingBalance,
+            date: selectedParty.creditAndBlance?.date,
+            limit: selectedParty.creditAndBlance?.limit,
+          },
+          additionalFields: selectedParty.additionalFields,
+        };
+
+        // Update with new values
+        const updatedData = {
+          ...existingData,
+          gstin: values.gstin || existingData.gstin,
+          phone: values.phoneNumber || existingData.phone,
+          gstAndAddress: {
+            ...existingData.gstAndAddress,
+            email: values.email || existingData.gstAndAddress?.email,
+            billingAddress:
+              values.addressLine1 || existingData.gstAndAddress?.billingAddress,
+          },
+          creditAndBlance: {
+            ...existingData.creditAndBlance,
+            limit: values.creditLimit
+              ? Number(values.creditLimit)
+              : existingData.creditAndBlance?.limit,
           },
         };
 
         // Clean up the payload to remove empty or undefined fields
-        return removeEmptyFields(payloadApi);
+        return removeEmptyFields(updatedData);
       };
 
       const { payload } = await dispatch(

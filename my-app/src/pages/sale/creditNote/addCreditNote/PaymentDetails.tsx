@@ -1,5 +1,3 @@
-//@ts-nocheck
-
 import React, { useState } from "react";
 import {
   Form,
@@ -38,6 +36,8 @@ const PaymentDetails = ({
   payments,
   totalReceivedAmount,
   form,
+  existingImage,
+  setExistingImage,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
 
@@ -98,6 +98,7 @@ const PaymentDetails = ({
         uid: file.uid,
         name: file.name,
         status: "done",
+        originFileObj: file,
         url: URL.createObjectURL(file),
       };
 
@@ -110,6 +111,12 @@ const PaymentDetails = ({
   };
 
   const handleRemove = (file, type) => {
+    const matchingFile = existingImage.filter((item) => item != file.url);
+    setExistingImage(matchingFile);
+
+    // const matchingDocs = existingDocs.filter((item) => item != file.url);
+    // setExistingDocs(matchingDocs);
+
     if (type === "image") {
       setImageFileList((prev) => prev.filter((item) => item.uid !== file.uid));
     } else {
@@ -191,7 +198,6 @@ const PaymentDetails = ({
             <FloatingLabelTextArea
               onChange={handleDescriptionChange}
               rows={4}
-              
             />
             <Button
               type="text"
@@ -217,12 +223,13 @@ const PaymentDetails = ({
 
         {/* File upload buttons */}
         <Space direction="vertical" className="w-full">
+          {/* @ts-ignore */}
           <Upload {...uploadProps("image")} className="w-full">
             <Button icon={<FileImageOutlined />} className="w-full">
               Add Image
             </Button>
           </Upload>
-
+          {/* @ts-ignore */}
           <Upload {...uploadProps("document")} className="w-full">
             <Button icon={<FileTextOutlined />} className="w-full">
               Add Document
@@ -247,7 +254,7 @@ const PaymentDetails = ({
 
         <div className="flex justify-between items-center">
           <span>Received</span>
-          <span>₹{totalReceivedAmount.toFixed(2)}</span>
+          <span>₹{totalReceivedAmount}</span>
         </div>
 
         <div className="flex justify-between items-center font-bold">

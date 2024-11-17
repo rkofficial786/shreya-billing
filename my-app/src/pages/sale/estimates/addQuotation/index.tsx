@@ -86,7 +86,7 @@ const AddQuotation = () => {
     }
 
     return {
-      customerName: data.party,
+      customerName: data.party._id,
       invoiceDate: dayjs(data.invoiceDate),
       referenceNumber: data.refNumber,
       roundOff: data.roundOff,

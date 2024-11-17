@@ -19,6 +19,7 @@ import {
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
+import InvoicePreviewModal from "./InvoiceTempelate";
 
 // Define interfaces for type safety
 interface PaymentOption {
@@ -77,6 +78,8 @@ const SaleOrder = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const [orders, setOrders] = useState<TableSaleOrder[]>([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -87,7 +90,7 @@ const SaleOrder = () => {
   const transformSaleOrders = (salesOrders: SaleOrder[]): TableSaleOrder[] => {
     return salesOrders.map((order) => ({
       key: order._id,
-      party: order.party, // Note: You might want to show party name instead of ID
+      party: order?.party?.name || "N/A", // Note: You might want to show party name instead of ID
       no: order.orderNumber,
       date: dayjs(order.orderDate).format("DD/MM/YYYY"),
       dueDate: dayjs(order.dueDate).format("DD/MM/YYYY"),
@@ -259,12 +262,7 @@ const SaleOrder = () => {
                 {
                   key: "3",
                   label: "Download PDF",
-                  onClick: () => handleDownloadPDF(record.key),
-                },
-                {
-                  key: "4",
-                  label: "Share Order",
-                  onClick: () => handleShareOrder(record.key),
+                  onClick: () => handleDownloadPDF(record),
                 },
               ],
             }}
@@ -295,9 +293,9 @@ const SaleOrder = () => {
     console.log("Deleting order:", orderId);
   };
 
-  const handleDownloadPDF = (orderId: string) => {
-    // Implement PDF download logic
-    console.log("Downloading PDF for order:", orderId);
+  const handleDownloadPDF = (record: any) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record.originalData);
   };
 
   const handleShareOrder = (orderId: string) => {
@@ -380,6 +378,12 @@ const SaleOrder = () => {
           sticky
         />
       </div>
+
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+      />
     </div>
   );
 };

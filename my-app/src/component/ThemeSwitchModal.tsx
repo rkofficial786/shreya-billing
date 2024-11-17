@@ -19,9 +19,9 @@ const ThemeSwitcherModal = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="text-primary-100 hover:text-white transition-colors duration-200"
+        className="text-primary-500 hover:text-primary-800 transition-colors duration-200"
       >
-        <PaletteIcon size={20} />
+        <PaletteIcon className="text-primary-500" size={20} />
       </button>
 
       <Modal

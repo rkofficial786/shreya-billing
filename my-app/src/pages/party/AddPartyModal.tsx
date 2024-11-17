@@ -304,11 +304,11 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
             {initialValues ? 'Edit Party' : 'Add Party'}
           </Title>
           <Space>
-            <Button
+            {/* <Button
               type="text"
               icon={<SettingOutlined />}
               className="flex items-center justify-center mr-6"
-            />
+            /> */}
           </Space>
         </div>
       }

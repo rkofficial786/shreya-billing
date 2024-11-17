@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, Button, Input, Empty, Dropdown, Space, Tag } from "antd";
 import {
@@ -9,21 +9,68 @@ import {
   SortAscendingOutlined,
 } from "@ant-design/icons";
 import TransactionHeader from "../../../component/TransactionHeader";
+import { useDispatch } from "react-redux";
+import dayjs from "dayjs";
+import {
+  deleteDeliveryChallan,
+  getAllDeliveryChallan,
+} from "../../../store/sale/deliveryChallan";
+import toast from "react-hot-toast";
+import InvoicePreviewModal from "./InvoiceTempelate";
 
 const DeliveryChallan = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  });
 
-  // Sample data - replace with your actual data
-  const challans = [
-    {
-      date: "26/10/2024",
-      party: "Rupraj",
-      challanNo: "1",
-      dueDate: "26/10/2024",
-      totalAmount: 100.0,
-      status: "Open",
-    },
-  ];
+  const dispatch = useDispatch<any>();
+
+  const callGetDeliveryChallan = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const { payload } = await dispatch(getAllDeliveryChallan(page));
+      console.log(payload, "payload");
+
+      if (payload.data.success) {
+        const tableData = payload?.data?.deliveryChallans.map(
+          (item, index) => ({
+            key: index + 1,
+            id: item._id,
+            dueDate: dayjs(item.challanDate).format("YYYY-MM-DD"),
+            challanNo: item.challanNumber,
+            party: item?.party?.name,
+
+            date: dayjs(item.challanDate).format("YYYY-MM-DD"),
+            status: item?.party.status,
+            totalAmount: item?.total,
+            originalData: item,
+          })
+        );
+        setData(tableData);
+        setPagination({
+          total: payload.data.pagination.totalDeliveryChallans,
+          current: payload.data.pagination.currentPage,
+          pageSize: payload.data.pagination.pageSize,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch sale orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    callGetDeliveryChallan();
+  }, []);
 
   const columns = [
     {
@@ -59,9 +106,9 @@ const DeliveryChallan = () => {
       render: (text) => (
         <span>
           {text}{" "}
-          {text === "26/10/2024" && (
+          {/* {text === "26/10/2024" && (
             <span className="text-gray-500">(Due: Today)</span>
-          )}
+          )} */}
         </span>
       ),
     },
@@ -82,7 +129,7 @@ const DeliveryChallan = () => {
     {
       title: "ACTION",
       key: "action",
-      render: () => (
+      render: (_, record) => (
         <Space size="middle">
           <Button type="primary" ghost>
             CONVERT TO SALE
@@ -90,9 +137,22 @@ const DeliveryChallan = () => {
           <Dropdown
             menu={{
               items: [
-                { key: "1", label: "Edit" },
-                { key: "2", label: "Delete" },
-                { key: "3", label: "Print" },
+                {
+                  key: "1",
+                  label: "Edit Order",
+                  onClick: () =>
+                    navigate(`/sale/delivery-challan/add?id=${record.id}`),
+                },
+                {
+                  key: "2",
+                  label: "Delete Order",
+                  onClick: () => handleDeleteOrder(record.id),
+                },
+                {
+                  key: "3",
+                  label: "Download PDF",
+                  onClick: () => handleDownloadPDF(record),
+                },
               ],
             }}
             trigger={["click"]}
@@ -103,6 +163,34 @@ const DeliveryChallan = () => {
       ),
     },
   ];
+
+  const handleConvertToSale = (orderData) => {
+    // Implement convert to sale logic
+    console.log("Converting to sale:", orderData);
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const { payload } = await dispatch(deleteDeliveryChallan(orderId));
+      if (payload.data.success) {
+        toast.success("Order deleted Successfully");
+        callGetDeliveryChallan();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("Deleting order:", orderId);
+  };
+
+  const handleDownloadPDF = (record: any) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record.originalData);
+  };
+
+  const handleShareOrder = (orderId: string) => {
+    // Implement share logic
+    console.log("Sharing order:", orderId);
+  };
 
   const EmptyState = () => (
     <div className="text-center py-16">
@@ -156,17 +244,22 @@ const DeliveryChallan = () => {
 
       <Table
         columns={columns}
-        dataSource={challans}
+        dataSource={data}
+        loading={loading}
         locale={{
           emptyText: <EmptyState />,
         }}
         pagination={{
-          total: challans.length,
-          pageSize: 10,
+          ...pagination,
           showSizeChanger: true,
           showTotal: (total) => `Total ${total} items`,
         }}
         className="shadow-sm"
+      />
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
       />
     </div>
   );

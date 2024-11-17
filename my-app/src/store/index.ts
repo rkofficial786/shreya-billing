@@ -9,6 +9,11 @@ import ItemsSlice from "./items";
 import SaleInvoiceSlice from "./sale/saleInvoice";
 import QuotationSlice from "./sale/quotation";
 import SaleOrderSlice from "./sale/saleOrder";
+import SaleReturnSlice from "./sale/saleReturn";
+import DeliveryChallanSlice from "./sale/deliveryChallan";
+import posSlice from "./sale/pos";
+import paymentInvoiceSlice from "./sale/paymentIn";
+import categorySlice from "./category";
 
 const reducers = combineReducers({
   user: UserSlice,
@@ -18,6 +23,11 @@ const reducers = combineReducers({
   saleInvoice: SaleInvoiceSlice,
   quotation: QuotationSlice,
   saleOrder: SaleOrderSlice,
+  saleReturn: SaleReturnSlice,
+  deliveryChallan: DeliveryChallanSlice,
+  pos: posSlice,
+  paymentInvoice: paymentInvoiceSlice,
+  category: categorySlice,
 });
 
 const persistConfig = {

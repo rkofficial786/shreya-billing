@@ -305,7 +305,7 @@ const AddSale = () => {
 
           <ItemsTable
             items={items}
-            handleItemChange={handleItemChange}
+            setItems={setItems}
             handleDeleteRow={handleDeleteRow}
             calculateTaxAmount={calculateTaxAmount}
             calculateFinalAmount={calculateFinalAmount}

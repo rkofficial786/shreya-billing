@@ -9,6 +9,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 import { Modal } from "antd";
+import { company } from "../../../constants/constants";
 
 // Register a standard font
 Font.register({
@@ -105,8 +106,8 @@ const InvoicePDF = ({ invoice }) => (
 
       {/* Company Details */}
       <View style={styles.companySection}>
-        <Text style={styles.companyName}>My Company</Text>
-        <Text>Phone: {invoice?.phone || "8603404434"}</Text>
+        <Text style={styles.companyName}>{company.name}</Text>
+        <Text>Phone: {company.phone}</Text>
       </View>
 
       {/* Bill To and Invoice Details Grid */}

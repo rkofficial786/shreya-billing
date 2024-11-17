@@ -26,7 +26,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { getAllItems, setEditItem } from "../../store/items";
+import { deleteItems, getAllItems, setEditItem } from "../../store/items";
+import ItemDetailsModal from "./ViewModal";
 
 const Items = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -92,7 +93,8 @@ const Items = () => {
         navigate(`/items/add-item?id=${record._id}`);
         break;
       case "delete":
-        // Handle delete
+        dispatch(deleteItems(record._id));
+        callGetAllItems()
         break;
       default:
         break;
@@ -114,13 +116,8 @@ const Items = () => {
         </Space>
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item key="stock" onClick={() => handleMenuClick(record, "stock")}>
-        <Space>
-          <PlusOutlined />
-          Adjust Stock
-        </Space>
-      </Menu.Item>
-      <Menu.Divider />
+    
+     
       <Menu.Item
         key="delete"
         danger
@@ -276,6 +273,9 @@ const Items = () => {
     },
   ];
 
+
+  console.log(selectedRecord,"selecetd record");
+  
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Panel */}
@@ -331,13 +331,13 @@ const Items = () => {
               pageSize: 10,
               showTotal: (total) => `Total ${total} items`,
             }}
-            className="min-h-[80vh]"
+            className="min-h-[90vh]"
             size="small"
           />
         </Card>
       </div>
 
-      <Modal
+      {/* <Modal
         title="Item Details"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -351,7 +351,12 @@ const Items = () => {
             <p>Last Updated: {selectedRecord.lastUpdated}</p>
           </div>
         )}
-      </Modal>
+      </Modal> */}
+      <ItemDetailsModal
+       visible={isModalVisible}
+       onCancel={() => setIsModalVisible(false)}
+       selectedRecord={selectedRecord}
+      />
     </div>
   );
 };

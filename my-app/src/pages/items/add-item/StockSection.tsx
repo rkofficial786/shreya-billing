@@ -3,7 +3,7 @@ import { FloatingLabelInputNumber, FloatingLabelInput } from "../../../component
 
 export const StockSection = () => (
   <div className="grid grid-cols-2 gap-6">
-    <Form.Item name="openingQuantity" label="Opening Quantity">
+    <Form.Item name="openingQuantity" label="Opening Quantity" required>
       <FloatingLabelInputNumber
         className="w-full"
         min={0}

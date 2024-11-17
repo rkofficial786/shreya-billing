@@ -1,33 +1,49 @@
-import { Button, Card, Divider, Form } from "antd";
+import { useState, useEffect } from "react";
+import { Button, Card, Divider, Form, Input, Modal } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   FloatingLabelInput,
   FloatingLabelSelect,
 } from "../../../component/input";
 import Barcode from "react-barcode";
-import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { createCategory, getAllCategories } from "../../../store/category";
 
-const BarcodeDisplay: React.FC<{
-  itemCode?: string;
-  itemDetails?: any;
-}> = ({ itemCode, itemDetails }) => {
+const BarcodeDisplay: React.FC<{ itemCode?: string; itemDetails?: any }> = ({
+  itemCode,
+  itemDetails,
+}) => {
   if (!itemCode) return null;
 
   return (
-    
-      <div className="mt-4 flex">
-        <Barcode value={itemCode} />
-      </div>
-    
+    <div className="mt-4 flex">
+      <Barcode value={itemCode} />
+    </div>
   );
 };
 
-export const BasicDetails = ({
-  onUnitClick,
-  generateRandomCode,
-  form,
-}: any) => {
+export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
   const [itemDetails, setItemDetails] = useState<any>(null);
+  const [categories, setCategories] = useState([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const dispatch = useDispatch<any>();
+  const [categoryForm] = Form.useForm();
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { payload } = await dispatch(getAllCategories());
+      console.log(categories, "caetgories");
+
+      if (payload.data.success) {
+        setCategories(payload.data.categories);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
 
   const handleFormChange = () => {
     const values = form.getFieldsValue();
@@ -38,6 +54,22 @@ export const BasicDetails = ({
     generateRandomCode();
     handleFormChange();
   };
+
+  const handleCreateCategory = async (values) => {
+    console.log(values, "values");
+
+    try {
+      const { payload } = await dispatch(createCategory(values));
+
+      if (payload.data.success) {
+        setShowCategoryModal(false);
+        fetchCategories();
+      }
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
+
   return (
     <div className="grid grid-cols-2 gap-6">
       <Form.Item
@@ -86,11 +118,16 @@ export const BasicDetails = ({
                 type="link"
                 icon={<PlusOutlined />}
                 className="text-gray-600"
+                onClick={() => setShowCategoryModal(true)}
               >
                 Add New Category
               </Button>
             </div>
           )}
+          options={categories.map((category) => ({
+            label: category.name,
+            value: category._id,
+          }))}
         />
       </Form.Item>
 
@@ -110,10 +147,35 @@ export const BasicDetails = ({
           }
         />
       </Form.Item>
+
       <BarcodeDisplay
         itemCode={itemDetails?.itemCode}
         itemDetails={itemDetails}
       />
+
+      <Modal
+        title="Create New Category"
+        open={showCategoryModal}
+        onCancel={() => {
+          setShowCategoryModal(false);
+          categoryForm.resetFields();
+        }}
+        onOk={() => {
+          categoryForm.submit();
+        }}
+      >
+        <Form form={categoryForm} onFinish={handleCreateCategory}>
+          <Form.Item
+            name="name"
+            label="Category Name"
+            rules={[
+              { required: true, message: "Please enter a category name" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

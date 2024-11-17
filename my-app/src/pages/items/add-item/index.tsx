@@ -12,12 +12,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { createItems, getItemsById, updateItems } from "../../../store/items";
 import { BasicDetails } from "./BasicDeyails";
 import dayjs from "dayjs";
+import toast from "react-hot-toast";
 
 interface FormData {
   itemName: string;
   itemHSN: string;
   itemCode: string;
-  category: string | string[];
+  category: string ;
   unit: {
     baseUnit: string;
     secondaryUnit?: string;
@@ -47,7 +48,7 @@ const AddItemPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
   const { editItem } = useSelector((state: any) => state.items);
 
   const [isProductType, setIsProductType] = useState(true);
@@ -57,8 +58,7 @@ const AddItemPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   console.log(editItem, id, "hell");
-  console.log(id,"id ");
-  
+  console.log(id, "id ");
 
   // Fetch item data when editing
   useEffect(() => {
@@ -80,8 +80,8 @@ const AddItemPage = () => {
   // Set form values when editItem changes
   useEffect(() => {
     if (editItem && id) {
-      console.log(id,"id in");
-      
+      console.log(id, "id in");
+
       // Transform the edit item data to match form fields
       const formValues = {
         itemName: editItem.name,
@@ -144,25 +144,25 @@ const AddItemPage = () => {
       itemCode,
       category,
       unit,
-
+  
       // Sale Price Details
       salePrice,
       salePriceType,
       discount,
       discountType,
-
+  
       // Wholesale Price Details
       wholesalePrice,
       wholesalePriceType,
       minWholesaleQty,
-
+  
       // Purchase Price Details
       purchasePrice,
       purchasePriceType,
-
+  
       // Tax Details
       taxRate,
-
+  
       // Stock Details
       openingQuantity,
       atPrice,
@@ -170,98 +170,99 @@ const AddItemPage = () => {
       minStockToMaintain,
       location,
     } = formData;
+  
+    if (!asOfDate || !openingQuantity) {
+      toast.error("Please fill stock inputs");
+      return;
+    }
 
-    // Transform images from fileList
-    const images = fileList.map((file) => {
-      if (file.originFileObj) {
-        return file.originFileObj; // For new uploads
-      }
-      return file.url; // For existing images
-    });
-
-    // Split existing and new images
-    const existingImg = images.filter((img) => typeof img === "string");
-    const img = images.filter((img) => typeof img !== "string");
-
-    // Construct the payload
-    const payload = {
-      // Basic Details
-      name: itemName,
-      hsn: itemHSN ? Number(itemHSN) : undefined,
-      itemCode,
-      category: category ? [category].flat() : undefined,
-
-      // Images
-      img,
-      existingImg,
-
-      // Unit Information
-      unit: {
-        baseUnit: unit,
-        secondaryUnit: unit?.secondaryUnit || undefined,
-      },
-
-      // Sale Price Information
-      salePrice: salePrice
-        ? {
-            salePrice: Number(salePrice),
-            taxType: salePriceType,
-            discountPrice: discount ? Number(discount) : undefined,
-            discountType: discountType,
-          }
-        : undefined,
-
-      // Wholesale Price Information
-      wholeSalePrice: wholesalePrice
-        ? {
-            wholeSalePrice: Number(wholesalePrice),
-            taxType: wholesalePriceType,
-            minimumWholeSaleQty: minWholesaleQty
-              ? Number(minWholesaleQty)
-              : undefined,
-          }
-        : undefined,
-
-      // Purchase Price Information
-      purchasePrice: purchasePrice
-        ? {
-            purchasePrice: Number(purchasePrice),
-            taxType: purchasePriceType,
-          }
-        : undefined,
-
-      // Tax Information
-      taxes: taxRate ? Number(taxRate.replace("gst", "")) : undefined,
-
-      // Stock Information
-      stock: {
+    console.log(category,"caetfory");
+    
+  
+    // Initialize FormData
+    const payload = new FormData();
+  
+    // Append basic details
+    payload.append("name", itemName);
+    if (itemHSN) payload.append("hsn", itemHSN);
+    payload.append("itemCode", itemCode);
+    if (category) payload.append("category", category);
+  
+    // Append unit information
+    if (unit) {
+      payload.append(
+        "unit",
+        JSON.stringify({
+          baseUnit: unit,
+          secondaryUnit: unit?.secondaryUnit || undefined,
+        })
+      );
+    }
+  
+    // Append sale price information
+    if (salePrice) {
+      payload.append(
+        "salePrice",
+        JSON.stringify({
+          salePrice: Number(salePrice),
+          taxType: salePriceType,
+          discountPrice: discount ? Number(discount) : undefined,
+          discountType: discountType,
+        })
+      );
+    }
+  
+    // Append wholesale price information
+    if (wholesalePrice) {
+      payload.append(
+        "wholeSalePrice",
+        JSON.stringify({
+          wholeSalePrice: Number(wholesalePrice),
+          taxType: wholesalePriceType,
+          minimumWholeSaleQty: minWholesaleQty
+            ? Number(minWholesaleQty)
+            : undefined,
+        })
+      );
+    }
+  
+    // Append purchase price information
+    if (purchasePrice) {
+      payload.append(
+        "purchasePrice",
+        JSON.stringify({
+          purchasePrice: Number(purchasePrice),
+          taxType: purchasePriceType,
+        })
+      );
+    }
+  
+    // Append tax information
+    if (taxRate) payload.append("taxes", taxRate.replace("gst", ""));
+  
+    // Append stock information
+    payload.append(
+      "stock",
+      JSON.stringify({
         openingQty: openingQuantity ? Number(openingQuantity) : undefined,
         atPrice: atPrice ? Number(atPrice) : undefined,
         date: asOfDate.format(),
-        minimumStock: minStockToMaintain
-          ? Number(minStockToMaintain)
-          : undefined,
+        minimumStock: minStockToMaintain ? Number(minStockToMaintain) : undefined,
         location,
-      },
-    };
-
-    // Remove undefined values for cleaner payload
-    Object.keys(payload).forEach((key) => {
-      if (payload[key] === undefined) {
-        delete payload[key];
-      } else if (typeof payload[key] === "object" && payload[key] !== null) {
-        Object.keys(payload[key]).forEach((subKey) => {
-          if (payload[key][subKey] === undefined) {
-            delete payload[key][subKey];
-          }
-        });
-        // Remove empty objects
-        if (Object.keys(payload[key]).length === 0) {
-          delete payload[key];
-        }
+      })
+    );
+  
+    // Append images
+    fileList.forEach((file) => {
+      if (file.originFileObj) {
+        // Append new uploads
+        payload.append("img", file.originFileObj);
+      } else {
+        // Append existing images
+        payload.append("existingImg", file.url);
       }
     });
-
+  
     return payload;
   };
 
@@ -270,23 +271,28 @@ const AddItemPage = () => {
       setIsLoading(true);
       const formData = await form.validateFields();
       const payloadApi = transformFormDataToPayload(formData, fileList);
+      //@ts-ignore
 
+      let response;
       if (id) {
         // Update existing item
-        await dispatch(updateItems({ id, data: payloadApi }));
-        if (!saveAndNew) {
-          navigate("/items");
-        }
+        response = await dispatch(updateItems({ id, data: payloadApi }));
       } else {
         // Create new item
-        await dispatch(createItems(payloadApi));
+        response = await dispatch(createItems(payloadApi));
       }
 
-      if (saveAndNew) {
-        form.resetFields();
-        setFileList([]);
-      } else {
-        navigate("/items");
+      console.log(response, "response");
+
+      // Check if the response was successful before resetting or navigating
+      if (response && response.payload.data.success) {
+        // Adjust this condition based on your API response structure
+        if (saveAndNew) {
+          form.resetFields();
+          setFileList([]);
+        } else {
+          navigate("/items");
+        }
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -301,7 +307,7 @@ const AddItemPage = () => {
         <div className="flex justify-between items-center mb-6">
           <Title level={4}>Add Item</Title>
           <Space>
-            <Button icon={<SettingOutlined />} />
+            {/* <Button icon={<SettingOutlined />} /> */}
             <Button
               onClick={() => navigate("/items")}
               icon={<CloseOutlined />}
@@ -321,17 +327,17 @@ const AddItemPage = () => {
             wholeSalePriceType: "withoutTax", // Add this
           }}
         >
-          <ItemTypeSwitch
+          {/* <ItemTypeSwitch
             isProductType={isProductType}
             onChange={setIsProductType}
-          />
+          /> */}
 
           <BasicDetails
             generateRandomCode={generateRandomCode}
             onUnitClick={() => setUnitModalVisible(true)}
             form={form}
           />
-          <Divider/>
+          <Divider />
 
           <Form.Item name="images" label="Item Images" className="col-span-2">
             <ImageUploadSection fileList={fileList} setFileList={setFileList} />

@@ -1,7 +1,6 @@
 //@ts-nocheck
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Table,
   Button,
@@ -12,6 +11,7 @@ import {
   Typography,
   Dropdown,
   Menu,
+  Form,
 } from "antd";
 import {
   SearchOutlined,
@@ -19,84 +19,143 @@ import {
   FileExcelOutlined,
   PrinterOutlined,
   ShareAltOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import TransactionHeader from "../../../component/TransactionHeader";
 import PaymentModal from "./Modal";
+import { useDispatch } from "react-redux";
+import {
+  createPaymentInvoice,
+  updatePaymentInvoice,
+  getAllPaymentInvoices,
+} from "../../../store/sale/paymentIn";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const PaymentIn = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [fileList, setFileList] = useState([]);
+  const dispatch = useDispatch<any>();
+  const [form] = Form.useForm();
   const [dateRange, setDateRange] = useState([
     dayjs("2024-10-01"),
     dayjs("2024-10-31"),
   ]);
   const [selectedFirm, setSelectedFirm] = useState("ALL FIRMS");
   const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [payments, setPayments] = useState([
+    { type: "Cash", amount: "", refNo: "" },
+  ]);
+  const [total, setTotal] = useState(0);
+  const [existingImage, setExistingImage] = useState([]);
 
   const [modalOpen, setModalOpen] = useState(false);
-  // ... rest of the state variables ...
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  console.log(fileList, "file list");
+  console.log(existingImage, "existingimge");
 
-  const handleModalSubmit = (values) => {
-    // Add the new payment to the data
-    const newPayment = {
-      key: (data.length + 1).toString(),
-      date: values.date,
-      receiptNo: values.receiptNo,
-      partyName: values.party,
-      categoryName: "",
-      description: values.description,
-      type: "Payment-In",
-      total: parseFloat(values.received),
-      payments: values.payments,
-      receivedPaid: parseFloat(values.received),
-      balance: 0.0,
-      fileList: values.fileList,
-    };
+  const handleModalSubmit = async (values) => {
+    const formData = new FormData();
 
-    console.log(newPayment, "newpayment");
+    const fileListUrls = new Set(fileList.map((item) => item.url));
 
-    setData([...data, newPayment]);
+    // Filter the existing image list to only include URLs that are in the file list
+    const filteredImage = existingImage.filter((url) => fileListUrls.has(url));
 
-    setModalOpen(false);
-    setFileList([]);
+    const payments = values.payments.map((item) => ({
+      paymentType: item.type,
+      amount: item.amount,
+    }));
+    formData.append("party", values.party);
+    formData.append("receiptNumber", values.receiptNo);
+
+    formData.append(`payments`, JSON.stringify(payments));
+
+    formData.append("date", values.date);
+    formData.append("description", values.description);
+    formData.append("received", values.received.toString());
+    formData.append("existingImg", JSON.stringify(filteredImage));
+
+    const actualFiles = values.fileList.filter((item) => item.originFileObj);
+    actualFiles.forEach((file, index) => {
+      formData.append(`img`, file.originFileObj);
+    });
+
+    try {
+      let payload;
+      if (selectedRecord) {
+        payload = await dispatch(
+          updatePaymentInvoice({ id: selectedRecord._id, data: formData })
+        );
+      } else {
+        payload = await dispatch(createPaymentInvoice(formData));
+      }
+      console.log(payload, "payment");
+      fetchData()
+      setModalOpen(false);
+      setFileList([]);
+      setSelectedRecord(null);
+      form.resetFields();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  // Data matching the screenshot
-  const dummyData = [
-    {
-      key: "1",
-      date: "26/10/2024",
-      refNo: "1",
-      partyName: "Rupraj",
-      categoryName: "",
-      type: "Payment-In",
-      total: 10000.0,
-      receivedPaid: 10000.0,
-      balance: 0.0,
-    },
-  ];
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const { payload } = await dispatch(
+        getAllPaymentInvoices({
+          page,
+          pageSize,
+          startDate: dateRange[0].format("YYYY-MM-DD"),
+          endDate: dateRange[1].format("YYYY-MM-DD"),
+          firm: selectedFirm === "ALL FIRMS" ? "" : selectedFirm,
+          search: searchText,
+        })
+      );
+
+      setData(payload.data.paymentsIn);
+      setTotal(payload.data.pagination.totalRecords);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setData(dummyData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [dispatch, page, pageSize, dateRange, selectedFirm, searchText]);
+
+  const editPaymentIn = (record) => {
+    setSelectedRecord(record);
+    setFileList(record.img.map((img) => ({ url: img })));
+    setModalOpen(true);
+    const pay = record.payments.map((payment) => ({
+      type: payment.paymentType,
+      amount: payment.amount,
+    }));
+    setExistingImage(record.img);
+    setPayments(pay);
+    form.setFieldsValue({
+      party: record.party._id,
+      receiptNo: record.receiptNumber,
+      payments: record.payments.map((payment) => ({
+        type: payment.paymentType,
+        amount: payment.amount,
+      })),
+      date: dayjs(record.date),
+      description: record.description,
+      received: record.received,
+      existingImg: record.img,
+    });
+  };
 
   const columns = [
     {
@@ -109,23 +168,24 @@ const PaymentIn = () => {
       title: "DATE",
       dataIndex: "date",
       key: "date",
-      sorter: (a, b) =>
-        dayjs(a.date, "DD/MM/YYYY").unix() - dayjs(b.date, "DD/MM/YYYY").unix(),
+      render: (_, record) => dayjs(record.date).format("YYYY-MM-DD"),
+      sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
     },
     {
       title: "REF NO.",
-      dataIndex: "refNo",
-      key: "refNo",
+      dataIndex: "receiptNumber",
+      key: "receiptNumber",
     },
     {
       title: "PARTY NAME",
-      dataIndex: "partyName",
+      dataIndex: "party.name",
       key: "partyName",
       filterable: true,
+      render: (_, record) => record.party.name,
     },
     {
       title: "CATEGORY NAME",
-      dataIndex: "categoryName",
+      dataIndex: "party.categoryName",
       key: "categoryName",
     },
     {
@@ -134,41 +194,38 @@ const PaymentIn = () => {
       key: "type",
     },
     {
-      title: "TOTAL",
-      dataIndex: "total",
-      key: "total",
-      align: "right",
-      render: (value) => `₹ ${value.toFixed(2)}`,
-    },
-    {
       title: "RECEIVED/PAID",
-      dataIndex: "receivedPaid",
+      dataIndex: "received",
       key: "receivedPaid",
       align: "right",
-      render: (value) => `₹ ${value.toFixed(2)}`,
+      render: (_, record) => `₹ ${record?.received}`,
     },
     {
       title: "BALANCE",
       dataIndex: "balance",
       key: "balance",
       align: "right",
-      render: (value) => `₹ ${value.toFixed(2)}`,
+      render: (_, record) => `₹ ${record?.received}`,
     },
     {
-      title: "PRINT / SHARE",
+      title: "Actions",
       key: "actions",
       render: (_, record) => (
         <Space>
           <Button type="text" icon={<PrinterOutlined />} />
           <Button type="text" icon={<ShareAltOutlined />} />
-          <Button type="text" icon={<MoreOutlined />} />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => editPaymentIn(record)}
+          />
         </Space>
       ),
     },
   ];
 
   const calculateTotals = () => {
-    return data.reduce(
+    return data?.reduce(
       (acc, curr) => {
         acc.total += curr.total;
         acc.balance += curr.balance;
@@ -190,12 +247,6 @@ const PaymentIn = () => {
       {/* Header Controls */}
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex flex-wrap gap-4 items-center">
-          {/* <Select defaultValue="This Month" className="w-32">
-            <Option value="this_month">This Month</Option>
-            <Option value="last_month">Last Month</Option>
-            <Option value="custom">Custom</Option>
-          </Select> */}
-
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded">
             <Typography.Text>Between</Typography.Text>
             <RangePicker
@@ -205,24 +256,12 @@ const PaymentIn = () => {
             />
           </div>
 
-          <Select
-            value={selectedFirm}
-            onChange={setSelectedFirm}
-            className="w-40"
-          >
-            <Option value="ALL FIRMS">ALL FIRMS</Option>
-            <Option value="firm1">Firm 1</Option>
-            <Option value="firm2">Firm 2</Option>
-          </Select>
-
-          {/* <Select defaultValue="Payment-In" className="w-40">
-            <Option value="Payment-In">Payment-In</Option>
-          </Select> */}
+       
         </div>
 
         <div className="flex gap-2">
-          <Button icon={<FileExcelOutlined />}>Excel Report</Button>
-          <Button icon={<PrinterOutlined />}>Print</Button>
+          {/* <Button icon={<FileExcelOutlined />}>Excel Report</Button> */}
+          {/* <Button icon={<PrinterOutlined />}>Print</Button> */}
         </div>
       </div>
 
@@ -243,25 +282,39 @@ const PaymentIn = () => {
       {/* Main Table */}
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={data?.map((item, index) => ({
+          key: index + 1,
+          ...item,
+        }))}
         className="min-h-[60vh]"
         loading={loading}
-        pagination={false}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          onChange: (page, pageSize) => {
+            setPage(page);
+            setPageSize(pageSize);
+          },
+        }}
         scroll={{ x: true }}
       />
-
-      {/* Footer Totals */}
-      <div className="flex justify-between mt-4 text-sm">
-        <div>Total Amount: ₹ {totals.total.toFixed(2)}</div>
-        <div>Balance: ₹ {totals.balance.toFixed(2)}</div>
-      </div>
 
       <PaymentModal
         open={modalOpen}
         fileList={fileList}
         setFileList={setFileList}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setModalOpen(false);
+          setFileList([]);
+          setSelectedRecord(null);
+          form.resetFields();
+        }}
         onSubmit={handleModalSubmit}
+        form={form}
+        isEdit={!!selectedRecord}
+        setPayments={setPayments}
+        payments={payments}
       />
     </div>
   );
