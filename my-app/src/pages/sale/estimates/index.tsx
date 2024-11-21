@@ -35,6 +35,8 @@ const Estimates = () => {
   const [quotationData, setQuotationData] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState({});
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -42,10 +44,15 @@ const Estimates = () => {
     total: 0,
   });
 
-  const callGetQuotation = async () => {
+  const callGetQuotation = async (page = 1, pageSize = 10, search = "") => {
     try {
-      const { payload } = await dispatch(getAllQuotation());
-      console.log(payload, "payload hai");
+      const { payload } = await dispatch(
+        getAllQuotation({
+          page,
+          pageSize,
+          search,
+        })
+      );
 
       if (payload.data.success) {
         // Transform the data to match the table structure
@@ -61,6 +68,7 @@ const Estimates = () => {
         }));
 
         setQuotationData(transformedData);
+        setFilteredData(transformedData);
         setPagination({
           current: payload.data.pagination.currentPage,
           pageSize: payload.data.pagination.pageSize,
@@ -77,6 +85,23 @@ const Estimates = () => {
     callGetQuotation();
   }, []);
 
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    callGetQuotation(1, pagination.pageSize, value);
+  };
+
+  const handleTableChange = (newPagination, filters, sorter) => {
+    const { current, pageSize } = newPagination;
+
+    // If search term exists, pass it to the API
+    callGetQuotation(current, pageSize, searchTerm);
+
+    setPagination({
+      current,
+      pageSize,
+      total: pagination.total,
+    });
+  };
   const columns = [
     {
       title: (
@@ -230,7 +255,7 @@ const Estimates = () => {
       const { payload } = await dispatch(deleteQuotation(id));
       if (payload.data.success) {
         toast.success("Quotation Deleted Successfully");
-        callGetQuotation();
+        callGetQuotation(pagination.current, pagination.pageSize, searchTerm);
       }
     } catch (error) {
       console.log(error);
@@ -286,6 +311,10 @@ const Estimates = () => {
             placeholder="Search by name, reference number..."
             className="max-w-md"
             size="large"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onPressEnter={(e) => handleSearch(e.target.value)}
+            allowClear
           />
         </div>
       </div>

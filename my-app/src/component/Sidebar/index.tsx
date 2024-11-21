@@ -7,6 +7,7 @@ import {
   FaChevronLeft,
   FaChevronDown,
   FaChevronRight,
+  FaMoneyBill,
 } from "react-icons/fa";
 import { AiFillShop } from "react-icons/ai";
 import { FaStamp } from "react-icons/fa";
@@ -43,6 +44,11 @@ const Sidebar = () => {
       path: "/inventory",
     },
     {
+      icon: <FaMoneyBill size={20} />,
+      text: "POS",
+      path: "/sale/pos",
+    },
+    {
       icon: <FaStamp size={20} />,
       text: "Sale",
       path: "/sale",
@@ -53,7 +59,7 @@ const Sidebar = () => {
         { text: "Sale Order", path: "/sale/order" },
         { text: "Deliver Challan", path: "/sale/delivery-challan" },
         { text: "Sale Return/CR", path: "/sale/credit-note" },
-        { text: "POS", path: "/sale/pos" },
+        // { text: "POS", path: "/sale/pos" },
       ],
     },
     {
@@ -83,13 +89,16 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`relative min-h-screen border-r transition-all duration-300 ${
+      className={`relative min-h-screen flex flex-col justify-between  max-h-[100vh] overflow-y-auto overflow-x-hidden border-r transition-all duration-300 ${
         isOpen ? "w-64" : "w-20"
       }`}
       style={{
         background: "linear-gradient(to bottom, #ffffff, #f8f9fa)",
       }}
     >
+      <div>
+
+     
       {/* Toggle Button */}
       <button
         onClick={toggleSidebar}
@@ -111,7 +120,7 @@ const Sidebar = () => {
               Admin Panel
             </h1>
             <div className="mr-2">
-            <ThemeSwitcherModal />
+              <ThemeSwitcherModal />
             </div>
           </>
         ) : (
@@ -119,12 +128,9 @@ const Sidebar = () => {
         )}
       </div>
 
-
-
       <div className="absolute -top-28 opacity-0">
         <ThemeManager />
       </div>
-
 
       {/* Navigation Menu */}
       <nav className="mt-6 px-3">
@@ -136,7 +142,7 @@ const Sidebar = () => {
               mouseEnterDelay={0.5}
             >
               <button
-              title={item.text}
+                title={item.text}
                 onClick={() => handleNavigation(item.path, item)}
                 className={`w-full flex items-center px-4 py-3 rounded-lg transition-all
                   ${isOpen ? "justify-start" : "justify-center"}
@@ -211,10 +217,10 @@ const Sidebar = () => {
           </div>
         ))}
       </nav>
-
+      </div>
       {/* User Profile */}
       {isOpen && (
-        <div className="absolute bottom-0 left-0 right-0 p-4">
+        <div className=" bottom-0 left-0 right-0 p-4">
           <div className="bg-white rounded-lg p-3 shadow-sm border">
             <div className="flex items-center">
               <Badge dot status="success" offset={[-4, 36]}>

@@ -28,6 +28,7 @@ import {
   getAllParties,
   updateParty,
   deleteParty,
+  getPartyTransactionById,
 } from "../../store/parties";
 import toast from "react-hot-toast";
 import { removeEmptyFields } from "../../helpers/helper";
@@ -172,7 +173,22 @@ const Party = () => {
     });
   };
 
+  const callGetTransactionOfParty = async () => {
+    try {
+      const { payload } = await dispatch(
+        getPartyTransactionById(selectedParty._id)
+      );
+
+      console.log(payload, "payload trasnaaction");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   console.log(selectedParty, "selelctd party");
+
+  useEffect(() => {
+    callGetTransactionOfParty();
+  }, [selectedParty]);
 
   const handleSubmit = async (values) => {
     try {

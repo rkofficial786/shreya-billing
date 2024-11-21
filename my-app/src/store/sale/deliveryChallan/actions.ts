@@ -13,8 +13,8 @@ export const createDeliveryChallan = createAsyncThunk(
   }
 );
 
-export const getAllDeliveryChallan = createAsyncThunk(`/api/getAllDeliveryChallan`, async (page:any) => {
-  const { status, data } = await api.get(`/api/deliveryChallan?page=${page}`);
+export const getAllDeliveryChallan = createAsyncThunk(`/api/getAllDeliveryChallan`, async (payload:any) => {
+  const { status, data } = await api.get(`/api/deliveryChallan?page=${payload.page}&search=${payload.search}`);
   return { status, data };
 });
 

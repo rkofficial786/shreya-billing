@@ -40,19 +40,25 @@ const PaymentIn = () => {
   const [fileList, setFileList] = useState([]);
   const dispatch = useDispatch<any>();
   const [form] = Form.useForm();
-  const [dateRange, setDateRange] = useState([
-    dayjs("2024-10-01"),
-    dayjs("2024-10-31"),
-  ]);
+  const [dateRange, setDateRange] = useState([]);
   const [selectedFirm, setSelectedFirm] = useState("ALL FIRMS");
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useState({
+    searchText: "",
+    firm: "ALL FIRMS",
+  });
   const [payments, setPayments] = useState([
     { type: "Cash", amount: "", refNo: "" },
   ]);
   const [total, setTotal] = useState(0);
   const [existingImage, setExistingImage] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -96,7 +102,7 @@ const PaymentIn = () => {
         payload = await dispatch(createPaymentInvoice(formData));
       }
       console.log(payload, "payment");
-      fetchData()
+      fetchData();
       setModalOpen(false);
       setFileList([]);
       setSelectedRecord(null);
@@ -111,27 +117,79 @@ const PaymentIn = () => {
     try {
       const { payload } = await dispatch(
         getAllPaymentInvoices({
-          page,
-          pageSize,
-          startDate: dateRange[0].format("YYYY-MM-DD"),
-          endDate: dateRange[1].format("YYYY-MM-DD"),
-          firm: selectedFirm === "ALL FIRMS" ? "" : selectedFirm,
-          search: searchText,
+          page: pagination.current,
+
+          startDate: dateRange[0],
+          endDate: dateRange[1],
+
+          search: searchParams.searchText,
         })
       );
 
-      setData(payload.data.paymentsIn);
-      setTotal(payload.data.pagination.totalRecords);
+      if (payload.data.success) {
+        setData(payload.data.paymentsIn);
+        setPagination((prevPagination) => ({
+          ...prevPagination,
+          total: payload.data.pagination.totalRecords,
+        }));
+      } else {
+        message.error("Failed to fetch payment invoices");
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
+      message.error("An error occurred while fetching data");
     } finally {
       setLoading(false);
     }
   };
 
+  // Trigger data fetching when search, pagination, or date changes
   useEffect(() => {
     fetchData();
-  }, [dispatch, page, pageSize, dateRange, selectedFirm, searchText]);
+  }, [
+    pagination.current,
+    pagination.pageSize,
+    dateRange,
+    searchParams.firm,
+    searchParams.searchText,
+  ]);
+
+  // Handle Table Change for Pagination and Sorting
+  const handleTableChange = (newPagination, filters, sorter) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+      total: newPagination.total,
+    });
+  };
+
+  // Search Handler
+  const handleSearch = (value) => {
+    // Reset to first page when searching
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchParams((prev) => ({ ...prev, searchText: value }));
+  };
+
+  // Date Range Handler
+  const handleDateRangeChange = (dates) => {
+    // Reset to first page when changing date range
+    const formattedDates = dates
+      ? dates.map((date) => (date ? date.toISOString() : null))
+      : [null, null];
+
+    setDateRange(formattedDates);
+  };
+
+  // Firm Filter Handler
+  const handleFirmChange = (value) => {
+    // Reset to first page when changing firm
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchParams((prev) => ({ ...prev, firm: value }));
+  };
+
+  // useEffect(() => {
+  //   fetchData();
+  // }, [dispatch, page, pageSize, dateRange, selectedFirm, searchText]);
 
   const editPaymentIn = (record) => {
     setSelectedRecord(record);
@@ -183,11 +241,11 @@ const PaymentIn = () => {
       filterable: true,
       render: (_, record) => record.party.name,
     },
-    {
-      title: "CATEGORY NAME",
-      dataIndex: "party.categoryName",
-      key: "categoryName",
-    },
+    // {
+    //   title: "CATEGORY NAME",
+    //   dataIndex: "party.categoryName",
+    //   key: "categoryName",
+    // },
     {
       title: "TYPE",
       dataIndex: "type",
@@ -197,14 +255,14 @@ const PaymentIn = () => {
       title: "RECEIVED/PAID",
       dataIndex: "received",
       key: "receivedPaid",
-      align: "right",
+      align: "left",
       render: (_, record) => `₹ ${record?.received}`,
     },
     {
       title: "BALANCE",
       dataIndex: "balance",
       key: "balance",
-      align: "right",
+      align: "left",
       render: (_, record) => `₹ ${record?.received}`,
     },
     {
@@ -249,29 +307,25 @@ const PaymentIn = () => {
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded">
             <Typography.Text>Between</Typography.Text>
-            <RangePicker
-              value={dateRange}
-              onChange={setDateRange}
-              format="DD/MM/YYYY"
-            />
+            <RangePicker className="w-64" onChange={handleDateRangeChange} />
           </div>
-
-       
-        </div>
-
-        <div className="flex gap-2">
-          {/* <Button icon={<FileExcelOutlined />}>Excel Report</Button> */}
-          {/* <Button icon={<PrinterOutlined />}>Print</Button> */}
         </div>
       </div>
 
       {/* Search and Add Button */}
       <div className="flex justify-between mb-4">
         <Input
-          placeholder="Search..."
+          placeholder="Search by party name, ref no..."
           prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          value={searchParams.searchText}
+          onChange={(e) =>
+            setSearchParams((prev) => ({
+              ...prev,
+              searchText: e.target.value,
+            }))
+          }
+          onPressEnter={(e) => handleSearch(e.target.value)}
+          allowClear
           className="w-64"
         />
         <Button type="primary" onClick={() => setModalOpen(true)}>

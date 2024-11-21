@@ -18,7 +18,7 @@ export const createPaymentInvoice = createAsyncThunk(
 export const getAllPaymentInvoices = createAsyncThunk(
   `/getAllPaymentInvoices`,
   async (payload:any) => {
-    const { status, data } = await api.get(`/api/paymentIn?page=${payload.page}`);
+    const { status, data } = await api.get(`/api/paymentIn?page=${payload.page}&search=${payload.search}&startDate=${payload.startDate}&endDate=${payload.endDate}`);
     return { status, data };
   }
 );

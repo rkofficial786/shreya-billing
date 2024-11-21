@@ -47,11 +47,22 @@ const CreditNote = () => {
     pageSize: 10,
   });
 
-  const callGetSaleOrder = async (page = 1, pageSize = 10) => {
+  const callGetSaleReturn = async (
+    page = 1,
+    search = "",
+    startDate = "",
+    endDate = ""
+  ) => {
     setLoading(true);
     try {
-      const { payload } = await dispatch(getAllSaleReturn(page));
-      console.log(payload, "payload");
+      const { payload } = await dispatch(
+        getAllSaleReturn({
+          page,
+          search,
+          startDate,
+          endDate,
+        })
+      );
 
       if (payload.data.success) {
         const tableData = payload.data.salesReturns.map((item, index) => ({
@@ -70,23 +81,47 @@ const CreditNote = () => {
           balance: item.total,
           originalData: item,
         }));
+
         setData(tableData);
         setPagination({
-          total: payload.data.pagination.totalSalesOrders,
+          total: payload.data.pagination.totalSalesReturns,
           current: payload.data.pagination.currentPage,
           pageSize: payload.data.pagination.pageSize,
         });
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch sale orders");
+      toast.error("Failed to fetch sale returns");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    callGetSaleOrder();
+    // Trigger fetch when search or date range changes
+    callGetSaleReturn(
+      1,
+      searchText,
+      dateRange?.[0]?.toISOString() || "",
+      dateRange?.[1]?.toISOString() || ""
+    );
+  }, [searchText, dateRange]);
+
+  const handleTableChange = (newPagination) => {
+    callGetSaleReturn(
+      newPagination.current,
+      searchText,
+      dateRange?.[0]?.toISOString() || "",
+      dateRange?.[1]?.toISOString() || ""
+    );
+  };
+
+  const handleDateRangeChange = (dates) => {
+    setDateRange(dates);
+  };
+
+  useEffect(() => {
+    callGetSaleReturn();
   }, []);
 
   const columns = [
@@ -187,7 +222,7 @@ const CreditNote = () => {
       const { payload } = await dispatch(deleteSaleReturn(orderId));
       if (payload.data.success) {
         toast.success("Order deleted Successfully");
-        callGetSaleOrder();
+        callGetSaleReturn();
       }
     } catch (error) {
       console.log(error);
@@ -228,20 +263,9 @@ const CreditNote = () => {
       {/* Header Controls */}
       <div className="flex flex-wrap gap-4 mb-4 items-center justify-between">
         <div className="flex flex-wrap gap-4 items-center">
-          <Select defaultValue="This Month" className="w-32">
-            <Option value="this_month">This Month</Option>
-            <Option value="last_month">Last Month</Option>
-            <Option value="custom">Custom</Option>
-          </Select>
-
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded">
             <Typography.Text>Between</Typography.Text>
-            <RangePicker
-              // @ts-ignore
-              value={dateRange}
-              onChange={setDateRange}
-              format="DD/MM/YYYY"
-            />
+            <RangePicker onChange={handleDateRangeChange} format="DD/MM/YYYY" />
           </div>
         </div>
 
@@ -253,8 +277,8 @@ const CreditNote = () => {
 
       {/* Search and Add Button */}
       <div className="flex justify-between mb-4">
-        <Input
-          placeholder="Search..."
+      <Input
+          placeholder="Search transactions..."
           prefix={<SearchOutlined />}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}

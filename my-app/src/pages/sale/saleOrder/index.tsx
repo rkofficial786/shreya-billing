@@ -81,6 +81,9 @@ const SaleOrder = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [searchText, setSearchText] = useState<string>("");
+
   const [pagination, setPagination] = useState({
     total: 0,
     current: 1,
@@ -111,10 +114,16 @@ const SaleOrder = () => {
     return order.status;
   };
 
-  const callGetSaleOrder = async (page = 1, pageSize = 10) => {
+  const callGetSaleOrder = async (page = 1, pageSize = 10, search = "") => {
     setLoading(true);
     try {
-      const { payload } = await dispatch(getAllSaleOrder(page));
+      const { payload } = await dispatch(
+        getAllSaleOrder({
+          page,
+
+          search, // Add search parameter
+        })
+      );
 
       if (payload.data.success) {
         const transformedOrders = transformSaleOrders(payload.data.salesOrders);
@@ -134,11 +143,17 @@ const SaleOrder = () => {
   };
 
   useEffect(() => {
-    callGetSaleOrder();
-  }, []);
+    callGetSaleOrder(pagination.current, pagination.pageSize, searchText);
+  }, [searchText]);
 
-  const handleTableChange = (pagination: any) => {
-    callGetSaleOrder(pagination.current, pagination.pageSize);
+  const handleTableChange = (newPagination: any) => {
+    callGetSaleOrder(newPagination.current, newPagination.pageSize, searchText);
+  };
+
+  const handleSearch = (value: string) => {
+    // Reset to first page when searching
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchText(value);
   };
 
   const columns = [
@@ -355,6 +370,12 @@ const SaleOrder = () => {
             placeholder="Search by party name, order number..."
             className="max-w-md"
             size="large"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onPressEnter={(e) =>
+              handleSearch((e.target as HTMLInputElement).value)
+            }
+            allowClear
           />
         </div>
       </div>

@@ -18,7 +18,7 @@ interface FormData {
   itemName: string;
   itemHSN: string;
   itemCode: string;
-  category: string ;
+  category: string;
   unit: {
     baseUnit: string;
     secondaryUnit?: string;
@@ -50,6 +50,7 @@ const AddItemPage = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const { editItem } = useSelector((state: any) => state.items);
+console.log(editItem,"edit oitem");
 
   const [isProductType, setIsProductType] = useState(true);
   const [unitModalVisible, setUnitModalVisible] = useState(false);
@@ -87,7 +88,7 @@ const AddItemPage = () => {
         itemName: editItem.name,
         itemHSN: editItem.hsn?.toString(),
         itemCode: editItem.itemCode,
-        category: editItem.category,
+        category: editItem.category[0]._id,
         unit: editItem.unit.baseUnit,
 
         // Pricing Section
@@ -144,25 +145,25 @@ const AddItemPage = () => {
       itemCode,
       category,
       unit,
-  
+
       // Sale Price Details
       salePrice,
       salePriceType,
       discount,
       discountType,
-  
+
       // Wholesale Price Details
       wholesalePrice,
       wholesalePriceType,
       minWholesaleQty,
-  
+
       // Purchase Price Details
       purchasePrice,
       purchasePriceType,
-  
+
       // Tax Details
       taxRate,
-  
+
       // Stock Details
       openingQuantity,
       atPrice,
@@ -170,24 +171,23 @@ const AddItemPage = () => {
       minStockToMaintain,
       location,
     } = formData;
-  
+
     if (!asOfDate || !openingQuantity) {
       toast.error("Please fill stock inputs");
       return;
     }
 
-    console.log(category,"caetfory");
-    
-  
+    console.log(category, "caetfory");
+
     // Initialize FormData
     const payload = new FormData();
-  
+
     // Append basic details
     payload.append("name", itemName);
     if (itemHSN) payload.append("hsn", itemHSN);
     payload.append("itemCode", itemCode);
     if (category) payload.append("category", category);
-  
+
     // Append unit information
     if (unit) {
       payload.append(
@@ -198,7 +198,7 @@ const AddItemPage = () => {
         })
       );
     }
-  
+
     // Append sale price information
     if (salePrice) {
       payload.append(
@@ -211,7 +211,7 @@ const AddItemPage = () => {
         })
       );
     }
-  
+
     // Append wholesale price information
     if (wholesalePrice) {
       payload.append(
@@ -225,7 +225,7 @@ const AddItemPage = () => {
         })
       );
     }
-  
+
     // Append purchase price information
     if (purchasePrice) {
       payload.append(
@@ -236,10 +236,10 @@ const AddItemPage = () => {
         })
       );
     }
-  
+
     // Append tax information
     if (taxRate) payload.append("taxes", taxRate.replace("gst", ""));
-  
+
     // Append stock information
     payload.append(
       "stock",
@@ -247,11 +247,13 @@ const AddItemPage = () => {
         openingQty: openingQuantity ? Number(openingQuantity) : undefined,
         atPrice: atPrice ? Number(atPrice) : undefined,
         date: asOfDate.format(),
-        minimumStock: minStockToMaintain ? Number(minStockToMaintain) : undefined,
+        minimumStock: minStockToMaintain
+          ? Number(minStockToMaintain)
+          : undefined,
         location,
       })
     );
-  
+
     // Append images
     fileList.forEach((file) => {
       if (file.originFileObj) {
@@ -262,7 +264,7 @@ const AddItemPage = () => {
         payload.append("existingImg", file.url);
       }
     });
-  
+
     return payload;
   };
 

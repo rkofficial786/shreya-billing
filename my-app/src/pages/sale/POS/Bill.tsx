@@ -140,13 +140,13 @@ const BillPdf = ({ customer, items, total, visible, onClose }) => {
                   <Text style={styles.tableCell}>{item.name}</Text>
                   <Text style={styles.tableCell}>{item.quantity}</Text>
                   <Text style={styles.tableCell}>
-                    ${item.price.toFixed(2)}
+                  Rs.{item.price.toFixed(2)}
                   </Text>
                   <Text style={styles.tableCell}>
-                    ${(item.discount || 0).toFixed(2)}
+Rs.{(item.discount || 0).toFixed(2)}
                   </Text>
                   <Text style={styles.tableCell}>
-                    $
+                    Rs.
                     {(
                       item.price * item.quantity -
                       (item.discount || 0)
@@ -157,7 +157,7 @@ const BillPdf = ({ customer, items, total, visible, onClose }) => {
             </View>
 
             <View style={styles.total}>
-              <Text>Total: ${total}</Text>
+              <Text>Total: Rs.{total}</Text>
             </View>
           </Page>
         </Document>

@@ -13,10 +13,15 @@ export const createSaleReturn = createAsyncThunk(
   }
 );
 
-export const getAllSaleReturn = createAsyncThunk(`/api/getAllSaleReturn`, async (page:any) => {
-  const { status, data } = await api.get(`/api/salesReturn?page=${page}`);
-  return { status, data };
-});
+export const getAllSaleReturn = createAsyncThunk(
+  `/api/getAllSaleReturn`,
+  async (payload: any) => {
+    const { status, data } = await api.get(
+      `/api/salesReturn?page=${payload.page}&search=${payload.search}&startDate=${payload.startDate}&endDate=${payload.endDate}`
+    );
+    return { status, data };
+  }
+);
 
 export const deleteSaleReturn = createAsyncThunk(
   `/deleteSaleReturn`,

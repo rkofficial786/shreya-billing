@@ -28,6 +28,7 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const dispatch = useDispatch<any>();
   const [categoryForm] = Form.useForm();
+  
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -35,7 +36,7 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
   const fetchCategories = async () => {
     try {
       const { payload } = await dispatch(getAllCategories());
-      console.log(categories, "caetgories");
+      console.log(categories, "categories");
 
       if (payload.data.success) {
         setCategories(payload.data.categories);
@@ -51,7 +52,16 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
   };
 
   const setBarCode = () => {
-    generateRandomCode();
+    // Get the current value of itemCode from the form
+    const currentItemCode = form.getFieldValue('itemCode');
+
+    if (!currentItemCode) {
+      // If itemCode is empty, generate a random code
+      const randomCode = generateRandomCode();
+      form.setFieldsValue({ itemCode: randomCode });
+    }
+
+    // Update form and itemDetails
     handleFormChange();
   };
 
@@ -134,12 +144,12 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
       <Form.Item name="itemCode" className="mb-0">
         <FloatingLabelInput
           label="Enter code"
-          className=" mb-0"
+          className="mb-0"
           suffix={
             <Button
               type="link"
               variant="link"
-              className="p-0 h-auto "
+              className="p-0 h-auto"
               onClick={setBarCode}
             >
               Assign Code

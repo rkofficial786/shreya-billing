@@ -22,6 +22,7 @@ const DeliveryChallan = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [pagination, setPagination] = useState({
@@ -29,14 +30,22 @@ const DeliveryChallan = () => {
     current: 1,
     pageSize: 10,
   });
-
   const dispatch = useDispatch<any>();
 
-  const callGetDeliveryChallan = async (page = 1, pageSize = 10) => {
+  const callGetDeliveryChallan = async (
+    page = 1,
+    pageSize = 10,
+    search = ""
+  ) => {
     setLoading(true);
     try {
-      const { payload } = await dispatch(getAllDeliveryChallan(page));
-      console.log(payload, "payload");
+      const { payload } = await dispatch(
+        getAllDeliveryChallan({
+          page,
+          
+          search,
+        })
+      );
 
       if (payload.data.success) {
         const tableData = payload?.data?.deliveryChallans.map(
@@ -46,7 +55,6 @@ const DeliveryChallan = () => {
             dueDate: dayjs(item.challanDate).format("YYYY-MM-DD"),
             challanNo: item.challanNumber,
             party: item?.party?.name,
-
             date: dayjs(item.challanDate).format("YYYY-MM-DD"),
             status: item?.party.status,
             totalAmount: item?.total,
@@ -62,15 +70,29 @@ const DeliveryChallan = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch sale orders");
+      toast.error("Failed to fetch delivery challans");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    callGetDeliveryChallan();
-  }, []);
+    callGetDeliveryChallan(pagination.current, pagination.pageSize, searchText);
+  }, [searchText]);
+
+  const handleTableChange = (newPagination: any) => {
+    callGetDeliveryChallan(
+      newPagination.current,
+      newPagination.pageSize,
+      searchText
+    );
+  };
+
+  const handleSearch = (value: string) => {
+    // Reset to first page when searching
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchText(value);
+  };
 
   const columns = [
     {
@@ -237,8 +259,14 @@ const DeliveryChallan = () => {
       <div className="mb-6">
         <Input
           prefix={<SearchOutlined className="text-gray-400" />}
-          placeholder="Search transactions..."
+          placeholder="Search by party name, challan number..."
           className="max-w-md"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          onPressEnter={(e) =>
+            handleSearch((e.target as HTMLInputElement).value)
+          }
+          allowClear
         />
       </div>
 
