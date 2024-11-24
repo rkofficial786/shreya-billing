@@ -1,5 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../apis/api";
+import axios from "axios";
+
 
 export const createItems = createAsyncThunk(
   `/createItems`,
@@ -17,6 +19,12 @@ export const getAllItems = createAsyncThunk(`/getAllItems`, async () => {
   const { status, data } = await api.get("/api/items");
   return { status, data };
 });
+
+export const getAllItemsFromWebsite = createAsyncThunk(`/getAllItemsFrom website`, async () => {
+  const { status, data } = await axios.get("https://www.shreyacollection.in/api/products");
+  return { status, data };
+});
+
 
 export const getAllItemsBySearch = createAsyncThunk(
   `/getAllItemsBySearch`,

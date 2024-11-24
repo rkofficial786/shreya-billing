@@ -4,6 +4,7 @@ import {
   deleteItems,
   getAllItems,
   getAllItemsBySearch,
+  getAllItemsFromWebsite,
   getItemsById,
   updateItems,
 } from "./actions";
@@ -29,6 +30,7 @@ export const ItemsSlice = createSlice({
     builder.addCase(deleteItems.fulfilled, (state, { payload }) => {});
     builder.addCase(updateItems.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllItemsBySearch.fulfilled, (state, { payload }) => {});
+    builder.addCase(getAllItemsFromWebsite.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllItems.fulfilled, (state, { payload }) => {
       if (payload.data && payload.data.success) {
         state.items = payload.data.items;
@@ -50,5 +52,6 @@ export {
   getItemsById,
   updateItems,
   getAllItemsBySearch,
+  getAllItemsFromWebsite
 };
 export default ItemsSlice.reducer;

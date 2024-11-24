@@ -76,15 +76,15 @@ const Inventory = () => {
       key: 'salePrice',
       dataIndex: 'salePrice',
       width: '12%',
-      sorter: (a, b) => a.salePrice.salePrice - b.salePrice.salePrice,
+      sorter: (a, b) => a?.salePrice?.salePrice - b?.salePrice?.salePrice,
       render: (salePrice) => (
         <div>
           <div className="text-base font-medium">
-            ₹{salePrice.salePrice}
+            ₹{salePrice?.salePrice}
           </div>
-          {salePrice.discountPrice > 0 && (
+          {salePrice?.discountPrice > 0 && (
             <div className="text-sm text-green-600">
-              {salePrice.discountPrice}% off
+              {salePrice?.discountPrice}% off
             </div>
           )}
         </div>
@@ -95,7 +95,7 @@ const Inventory = () => {
       dataIndex: ['purchasePrice', 'purchasePrice'],
       key: 'purchasePrice',
       width: '12%',
-      sorter: (a, b) => a.purchasePrice.purchasePrice - b.purchasePrice.purchasePrice,
+      sorter: (a, b) => a?.purchasePrice?.purchasePrice - b?.purchasePrice?.purchasePrice,
       render: (price) => `₹${price}`,
     },
     {
@@ -103,13 +103,13 @@ const Inventory = () => {
       key: 'stock',
       dataIndex: 'stock',
       width: '12%',
-      sorter: (a, b) => a.stock.openingQty - b.stock.openingQty,
+      sorter: (a, b) => a?.stock?.openingQty - b?.stock?.openingQty,
       render: (stock) => (
-        <Tooltip title={`Location: ${stock.location}`}>
+        <Tooltip title={`Location: ${stock?.location}`}>
           <div>
-            <div className="font-medium">{stock.openingQty}</div>
+            <div className="font-medium">{stock?.openingQty}</div>
             <div className="text-sm">
-              Min: {stock.minimumStock}
+              Min: {stock?.minimumStock}
             </div>
           </div>
         </Tooltip>
@@ -128,8 +128,8 @@ const Inventory = () => {
       key: 'status',
       width: '12%',
       render: (_, record) => {
-        const stock = record.stock.openingQty;
-        const minStock = record.stock.minimumStock;
+        const stock = record?.stock?.openingQty;
+        const minStock = record?.stock?.minimumStock;
         let status = {
           color: 'success',
           text: 'In Stock'
@@ -147,7 +147,7 @@ const Inventory = () => {
           };
         }
         
-        return <Tag color={status.color}>{status.text}</Tag>;
+        return <Tag color={status?.color}>{status.text}</Tag>;
       },
       filters: [
         { text: 'In Stock', value: 'in_stock' },
@@ -155,8 +155,8 @@ const Inventory = () => {
         { text: 'Low Stock', value: 'low_stock' },
       ],
       onFilter: (value, record) => {
-        const stock = record.stock.openingQty;
-        const minStock = record.stock.minimumStock;
+        const stock = record?.stock?.openingQty;
+        const minStock = record?.stock?.minimumStock;
         
         switch(value) {
           case 'low_stock':

@@ -12,12 +12,12 @@ const ItemDetailsModal = ({ visible, onCancel, selectedRecord }) => {
       {selectedRecord && (
         <Card>
           <Descriptions title="General Information" bordered>
-            <Descriptions.Item label="Name">{selectedRecord.name}</Descriptions.Item>
-            <Descriptions.Item label="HSN">{selectedRecord.hsn}</Descriptions.Item>
-            <Descriptions.Item label="Item Code">{selectedRecord.itemCode}</Descriptions.Item>
+            <Descriptions.Item label="Name">{selectedRecord?.name}</Descriptions.Item>
+            <Descriptions.Item label="HSN">{selectedRecord?.hsn}</Descriptions.Item>
+            <Descriptions.Item label="Item Code">{selectedRecord?.itemCode}</Descriptions.Item>
             <Descriptions.Item label="Category">
-              {selectedRecord.category.length > 0
-                ? selectedRecord.category.map((cat) => cat.name).join(', ')
+              {selectedRecord?.category.length > 0
+                ? selectedRecord?.category.map((cat) => cat.name).join(', ')
                 : 'N/A'}
             </Descriptions.Item>
           </Descriptions>
@@ -26,40 +26,40 @@ const ItemDetailsModal = ({ visible, onCancel, selectedRecord }) => {
 
           <Descriptions title="Pricing" bordered>
             <Descriptions.Item label="Purchase Price">
-              {selectedRecord.purchasePrice.purchasePrice}
+              {selectedRecord?.purchasePrice?.purchasePrice}
             </Descriptions.Item>
             <Descriptions.Item label="Purchase Tax Type">
-              {selectedRecord.purchasePrice.taxType}
+              {selectedRecord?.purchasePrice?.taxType}
             </Descriptions.Item>
             <Descriptions.Item label="Sale Price">
-              {selectedRecord.salePrice.salePrice}
+              {selectedRecord?.salePrice?.salePrice}
             </Descriptions.Item>
             <Descriptions.Item label="Sale Tax Type">
-              {selectedRecord.salePrice.taxType}
+              {selectedRecord?.salePrice?.taxType}
             </Descriptions.Item>
             <Descriptions.Item label="Discount Price">
-              {selectedRecord.salePrice.discountPrice}
+              {selectedRecord?.salePrice?.discountPrice}
             </Descriptions.Item>
             <Descriptions.Item label="Discount Type">
-              {selectedRecord.salePrice.discountType}
+              {selectedRecord?.salePrice?.discountType}
             </Descriptions.Item>
           </Descriptions>
 
           <Divider />
 
           <Descriptions title="Stock" bordered>
-            <Descriptions.Item label="Base Unit">{selectedRecord.unit.baseUnit}</Descriptions.Item>
+            <Descriptions.Item label="Base Unit">{selectedRecord?.unit?.baseUnit}</Descriptions.Item>
             <Descriptions.Item label="Opening Quantity">
-              {selectedRecord.stock.openingQty}
+              {selectedRecord?.stock?.openingQty}
             </Descriptions.Item>
-            <Descriptions.Item label="At Price">{selectedRecord.stock.atPrice}</Descriptions.Item>
+            <Descriptions.Item label="At Price">{selectedRecord?.stock?.atPrice}</Descriptions.Item>
             <Descriptions.Item label="Stock Date">
-              {new Date(selectedRecord.stock.date).toLocaleString()}
+              {new Date(selectedRecord?.stock?.date).toLocaleString()}
             </Descriptions.Item>
             <Descriptions.Item label="Minimum Stock">
-              {selectedRecord.stock.minimumStock}
+              {selectedRecord?.stock?.minimumStock}
             </Descriptions.Item>
-            <Descriptions.Item label="Location">{selectedRecord.stock.location}</Descriptions.Item>
+            <Descriptions.Item label="Location">{selectedRecord?.stock?.location}</Descriptions.Item>
           </Descriptions>
 
           <Divider />
@@ -71,7 +71,7 @@ const ItemDetailsModal = ({ visible, onCancel, selectedRecord }) => {
             <Descriptions.Item label="Updated At">
               {new Date(selectedRecord.updatedAt).toLocaleString()}
             </Descriptions.Item>
-            <Descriptions.Item label="Taxes">{selectedRecord.taxes}%</Descriptions.Item>
+            <Descriptions.Item label="Taxes">{selectedRecord?.taxes}%</Descriptions.Item>
           </Descriptions>
         </Card>
       )}

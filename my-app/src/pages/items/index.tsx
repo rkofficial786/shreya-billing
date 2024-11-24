@@ -26,7 +26,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { deleteItems, getAllItems, setEditItem } from "../../store/items";
+import { deleteItems, getAllItems, getAllItemsFromWebsite, setEditItem } from "../../store/items";
 import ItemDetailsModal from "./ViewModal";
 
 const Items = () => {
@@ -41,6 +41,10 @@ const Items = () => {
       const { payload } = await dispatch(getAllItems());
       console.log(payload);
       if (payload.data.success) {
+        const {payload : webItems} =await dispatch(getAllItemsFromWebsite())
+
+        console.log(webItems,"websitems");
+        
         setItems(payload.data.items);
         if (payload.data.items.length > 0) {
           setSelectedRecord(payload.data.items[0]);
