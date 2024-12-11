@@ -19,6 +19,7 @@ import {
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
+import InvoicePreviewModal from "./InvoiceTempelate";
 
 // Define interfaces for type safety
 interface PaymentOption {
@@ -77,7 +78,12 @@ const SaleOrder = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const [orders, setOrders] = useState<TableSaleOrder[]>([]);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [searchText, setSearchText] = useState<string>("");
+
   const [pagination, setPagination] = useState({
     total: 0,
     current: 1,
@@ -87,7 +93,7 @@ const SaleOrder = () => {
   const transformSaleOrders = (salesOrders: SaleOrder[]): TableSaleOrder[] => {
     return salesOrders.map((order) => ({
       key: order._id,
-      party: order.party, // Note: You might want to show party name instead of ID
+      party: order?.party?.name || "N/A", // Note: You might want to show party name instead of ID
       no: order.orderNumber,
       date: dayjs(order.orderDate).format("DD/MM/YYYY"),
       dueDate: dayjs(order.dueDate).format("DD/MM/YYYY"),
@@ -108,10 +114,16 @@ const SaleOrder = () => {
     return order.status;
   };
 
-  const callGetSaleOrder = async (page = 1, pageSize = 10) => {
+  const callGetSaleOrder = async (page = 1, pageSize = 10, search = "") => {
     setLoading(true);
     try {
-      const { payload } = await dispatch(getAllSaleOrder(page));
+      const { payload } = await dispatch(
+        getAllSaleOrder({
+          page,
+
+          search, // Add search parameter
+        })
+      );
 
       if (payload.data.success) {
         const transformedOrders = transformSaleOrders(payload.data.salesOrders);
@@ -131,11 +143,17 @@ const SaleOrder = () => {
   };
 
   useEffect(() => {
-    callGetSaleOrder();
-  }, []);
+    callGetSaleOrder(pagination.current, pagination.pageSize, searchText);
+  }, [searchText]);
 
-  const handleTableChange = (pagination: any) => {
-    callGetSaleOrder(pagination.current, pagination.pageSize);
+  const handleTableChange = (newPagination: any) => {
+    callGetSaleOrder(newPagination.current, newPagination.pageSize, searchText);
+  };
+
+  const handleSearch = (value: string) => {
+    // Reset to first page when searching
+    setPagination((prev) => ({ ...prev, current: 1 }));
+    setSearchText(value);
   };
 
   const columns = [
@@ -259,12 +277,7 @@ const SaleOrder = () => {
                 {
                   key: "3",
                   label: "Download PDF",
-                  onClick: () => handleDownloadPDF(record.key),
-                },
-                {
-                  key: "4",
-                  label: "Share Order",
-                  onClick: () => handleShareOrder(record.key),
+                  onClick: () => handleDownloadPDF(record),
                 },
               ],
             }}
@@ -295,9 +308,9 @@ const SaleOrder = () => {
     console.log("Deleting order:", orderId);
   };
 
-  const handleDownloadPDF = (orderId: string) => {
-    // Implement PDF download logic
-    console.log("Downloading PDF for order:", orderId);
+  const handleDownloadPDF = (record: any) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record.originalData);
   };
 
   const handleShareOrder = (orderId: string) => {
@@ -357,6 +370,12 @@ const SaleOrder = () => {
             placeholder="Search by party name, order number..."
             className="max-w-md"
             size="large"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onPressEnter={(e) =>
+              handleSearch((e.target as HTMLInputElement).value)
+            }
+            allowClear
           />
         </div>
       </div>
@@ -380,6 +399,12 @@ const SaleOrder = () => {
           sticky
         />
       </div>
+
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+      />
     </div>
   );
 };

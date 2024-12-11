@@ -40,3 +40,13 @@ export const getPartyById = createAsyncThunk(
     return { status, data };
   }
 );
+
+
+
+export const getPartyTransactionById = createAsyncThunk(
+  `/getPartyTransactionById`,
+  async (param: any) => {
+    const { status, data } = await api.get(`/api/parties/${param}/transaction`);
+    return { status, data };
+  }
+);

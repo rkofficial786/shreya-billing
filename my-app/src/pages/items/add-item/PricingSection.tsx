@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Form, Button, Select, Typography } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
-import { FloatingLabelInputNumber, FloatingLabelSelect } from '../../../component/input';
+import React, { useState } from "react";
+import { Form, Button, Select, Typography } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  FloatingLabelInputNumber,
+  FloatingLabelSelect,
+} from "../../../component/input";
 
 const { Title } = Typography;
 
@@ -11,19 +14,20 @@ export const PricingSection = () => {
   return (
     <div className="grid grid-cols-2 gap-6">
       <div>
-        <Title level={5}>Sale Price</Title>
+        <Title level={5}>Purchase Price</Title>
         <div className="flex gap-4">
-          <Form.Item name="salePrice" className="flex-1">
+          <Form.Item name="purchasePrice" className="flex-1">
             <FloatingLabelInputNumber
               className="w-full"
-              placeholder="Enter sale price"
+              label="Enter purchase price"
               prefix="₹"
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
             />
           </Form.Item>
-          <Form.Item name="salePriceType" className="w-40">
+          <Form.Item name="purchasePriceType" className="w-40">
             <FloatingLabelSelect
-             
               options={[
                 { value: "withoutTax", label: "Without Tax" },
                 { value: "withTax", label: "With Tax" },
@@ -31,10 +35,36 @@ export const PricingSection = () => {
             />
           </Form.Item>
         </div>
+      </div>
+      <div>
+        <Title level={5}>Sale Price</Title>
+        <div className="flex gap-4">
+          <Form.Item name="salePrice" className="flex-1">
+            <FloatingLabelInputNumber
+              className="w-full"
+              placeholder="Enter sale price"
+              prefix="₹"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+            />
+          </Form.Item>
+          {/* <Form.Item name="salePriceType" className="w-40">
+            <FloatingLabelSelect
+              options={[
+                { value: "withoutTax", label: "Without Tax" },
+                { value: "withTax", label: "With Tax" },
+              ]}
+            />
+          </Form.Item> */}
+        </div>
 
         <div className="flex gap-4">
           <Form.Item name="discount" className="flex-1">
-            <FloatingLabelInputNumber className="w-full" label="Enter discount" />
+            <FloatingLabelInputNumber
+              className="w-full"
+              label="Enter discount"
+            />
           </Form.Item>
           <Form.Item name="discountType" className="w-40">
             <FloatingLabelSelect
@@ -48,9 +78,9 @@ export const PricingSection = () => {
         </div>
 
         {!showWholesalePrices && (
-          <Button 
-            type="link" 
-            icon={<PlusOutlined />} 
+          <Button
+            type="link"
+            icon={<PlusOutlined />}
             className="text-blue-500 p-0"
             onClick={() => setShowWholesalePrices(true)}
           >
@@ -61,10 +91,12 @@ export const PricingSection = () => {
         {showWholesalePrices && (
           <div className="mt-4">
             <div className="flex justify-between items-center mb-2">
-              <Title level={5} className="mb-0">Wholesale Price</Title>
-              <Button 
-                type="text" 
-                icon={<DeleteOutlined />} 
+              <Title level={5} className="mb-0">
+                Wholesale Price
+              </Title>
+              <Button
+                type="text"
+                icon={<DeleteOutlined />}
                 className="text-red-500"
                 onClick={() => setShowWholesalePrices(false)}
               />
@@ -75,12 +107,13 @@ export const PricingSection = () => {
                   className="w-full"
                   placeholder="Wholesale Price"
                   prefix="₹"
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
                 />
               </Form.Item>
               <Form.Item name="wholesalePriceType" className="w-40">
                 <FloatingLabelSelect
-                 
                   options={[
                     { value: "withoutTax", label: "Without Tax" },
                     { value: "withTax", label: "With Tax" },
@@ -96,29 +129,6 @@ export const PricingSection = () => {
             </Form.Item>
           </div>
         )}
-      </div>
-
-      <div>
-        <Title level={5}>Purchase Price</Title>
-        <div className="flex gap-4">
-          <Form.Item name="purchasePrice" className="flex-1">
-            <FloatingLabelInputNumber
-              className="w-full"
-              label="Enter purchase price"
-              prefix="₹"
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            />
-          </Form.Item>
-          <Form.Item name="purchasePriceType" className="w-40">
-            <FloatingLabelSelect
-              
-              options={[
-                { value: "withoutTax", label: "Without Tax" },
-                { value: "withTax", label: "With Tax" },
-              ]}
-            />
-          </Form.Item>
-        </div>
       </div>
 
       <div className="col-span-2">

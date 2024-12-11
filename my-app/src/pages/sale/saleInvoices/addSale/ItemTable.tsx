@@ -1,23 +1,82 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Table, Button, InputNumber, Radio, Select } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import {
   FloatingLabelInput,
   FloatingLabelSelect,
 } from "../../../../component/input";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getAllItems } from "../../../../store/items";
+import FloatingLabelSelectWithAddItem from "../../estimates/addQuotation/FloatItemSelect";
 
 const { Option } = Select;
 
 export const ItemsTable = ({
   items,
-  handleItemChange,
+
   handleDeleteRow,
   calculateTaxAmount,
+  setItems,
   calculateFinalAmount,
 }) => {
+  const dispatch = useDispatch<any>();
+  const { items: saleItems } = useSelector((state: any) => state.items);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const callGetAllItems = async () => {
+      await dispatch(getAllItems());
+    };
+    callGetAllItems();
+  }, []);
 
+  // Handler for item selection
 
-  
+  const handleItemChange = (key, field, value) => {
+    console.log(key, value, field, "key value fields");
+    // First find the item index
+    const itemIndex = items.findIndex((item) => item.key === key);
+
+    if (itemIndex === -1) {
+      console.warn(`Item with key ${key} not found`);
+      return;
+    }
+
+    // Create a new array with the updated item
+    const updatedItems = [...items];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      [field]: value,
+    };
+
+    setItems(updatedItems);
+  };
+
+  // Modified handleItemSelect to work with the new handleItemChange
+  const handleItemSelect = (value, itemKey) => {
+    const selectedItem = saleItems.find((item) => item._id === value);
+
+    if (selectedItem) {
+      // Update all fields at once to prevent multiple rerenders
+      const itemIndex = items.findIndex((item) => item.key === itemKey);
+      if (itemIndex === -1) return;
+
+      const updatedItems = [...items];
+      updatedItems[itemIndex] = {
+        ...updatedItems[itemIndex],
+        id: selectedItem._id,
+        item: selectedItem.name,
+        quantity: selectedItem.stock.openingQty,
+        unit: selectedItem.unit.baseUnit,
+        price: selectedItem.salePrice.salePrice,
+        priceType: selectedItem.salePrice.taxType,
+        tax: `IGST@${selectedItem.taxes}%`,
+      };
+
+      setItems(updatedItems);
+    }
+  };
+
   const columns = [
     {
       title: "#",
@@ -30,11 +89,23 @@ export const ItemsTable = ({
       dataIndex: "item",
 
       render: (_, record) => (
-        <FloatingLabelInput
-          label="Enter item name"
+        <FloatingLabelSelectWithAddItem
+          label="Select item"
           className="min-w-[200px] relative top-2"
-          value={record.item}
-          onChange={(e) => handleItemChange(record.key, "item", e.target.value)}
+          value={record.id || undefined}
+          onChange={(value) => {
+            if (value === "add-new") {
+              navigate("/items/add-item");
+              return;
+            }
+            handleItemSelect(value, record.key);
+          }}
+          items={saleItems}
+          onAddItem={(inputValue) => {
+            // You can either navigate to the add item page with the input value
+            navigate(`/items/add-item?name=${encodeURIComponent(inputValue)}`);
+            // Or handle the new item creation in any other way you prefer
+          }}
         />
       ),
     },

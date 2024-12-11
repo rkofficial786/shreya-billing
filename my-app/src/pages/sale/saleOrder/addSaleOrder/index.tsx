@@ -108,7 +108,7 @@ const AddSaleOrder = () => {
     setPayments(paymentsOption);
 
     return {
-      customerName: data.party,
+      customerName: data.party._id,
       orderNumber: data.orderNumber,
       phoneNumber: data.phone,
       stateOfSupply: data.stateOfSupply,

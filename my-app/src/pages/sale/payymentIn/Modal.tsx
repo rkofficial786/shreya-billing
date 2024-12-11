@@ -17,16 +17,26 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { ImageUploadSection } from "../../items/add-item/ImageUpload";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllParties } from "../../../store/parties";
+import { FloatingLabelSelect } from "../../../component/input";
 
 const { Option } = Select;
 
-const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
-  const [form] = Form.useForm();
-  const [payments, setPayments] = useState([
-    { type: "Cash", amount: "", refNo: "" },
-  ]);
+const PaymentModal = ({
+  open,
+  onCancel,
+  onSubmit,
+  setFileList,
+  fileList,
+  form,
+  setPayments,
+  payments,
+  isEdit,
+}) => {
   const [totalAmount, setTotalAmount] = useState(0);
-
+  const { parties } = useSelector((state: any) => state.party);
+  const dispatch = useDispatch<any>();
   useEffect(() => {
     const total = payments.reduce(
       (sum, payment) => sum + (Number(payment.amount) || 0),
@@ -41,7 +51,7 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
       onSubmit({
         ...values,
         fileList,
-        date: values.date.format("DD/MM/YYYY"),
+        date: dayjs(values.date),
         payments: payments,
       });
       form.resetFields();
@@ -65,6 +75,27 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
       setPayments(updatedPayments);
     }
   };
+
+  // Handler for customer selection
+  const handleCustomerSelect = (value, option) => {
+    // Find the selected party
+    const selectedParty = parties.find((party) => party._id === value);
+    console.log(selectedParty, "selecyted paryt");
+    console.log(value, "values");
+
+    if (selectedParty) {
+      form.setFieldsValue({
+        party: value,
+      });
+    }
+  };
+
+  useEffect(() => {
+    const callGetAllParty = async () => {
+      await dispatch(getAllParties());
+    };
+    callGetAllParty();
+  }, []);
 
   return (
     <Modal
@@ -90,14 +121,30 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
           {/* Left Column */}
           <div>
             <Form.Item name="party" label="Party" required className="mb-2">
-              <Select
+              <FloatingLabelSelect
+                className="mb-0"
                 showSearch
-                placeholder="Select party"
+                label="Search by Name/Phone"
                 optionFilterProp="children"
+                onChange={handleCustomerSelect}
+                filterOption={(input, option) => {
+                  const party = parties.find((p) => p._id === option?.value);
+                  return (
+                    party?.name?.toLowerCase().includes(input.toLowerCase()) ||
+                    party?.phone?.includes(input)
+                  );
+                }}
               >
-                <Option value="party1">Party 1</Option>
-                <Option value="party2">Party 2</Option>
-              </Select>
+                {parties?.map((party) => (
+                  <Option
+                    key={party._id}
+                    value={party._id}
+                    phoneNumber={party.phone}
+                  >
+                    {party?.name} - {party?.phone}
+                  </Option>
+                ))}
+              </FloatingLabelSelect>
             </Form.Item>
 
             {/* Payments Section */}
@@ -114,7 +161,7 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
                 </Button>
               </div>
 
-              {payments.map((payment, index) => (
+              {payments?.map((payment, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <Select
                     value={payment.type}
@@ -127,7 +174,7 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
                     <Option value="Cash">Cash</Option>
                     <Option value="Cheque">Cheque</Option>
                   </Select>
-                  {payment.type === "Cheque" && (
+                  {payment?.type === "Cheque" && (
                     <Input
                       placeholder="Ref No"
                       value={payment.refNo}
@@ -182,7 +229,7 @@ const PaymentModal = ({ open, onCancel, onSubmit, setFileList, fileList }) => {
 
           {/* Right Column */}
           <div>
-            <Form.Item  name="receiptNo" label="Receipt No" className="mb-2">
+            <Form.Item name="receiptNo" label="Receipt No" className="mb-2">
               <Input placeholder="Enter Receipt No." />
             </Form.Item>
 

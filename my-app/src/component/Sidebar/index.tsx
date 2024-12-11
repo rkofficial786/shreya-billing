@@ -1,74 +1,28 @@
 import React, { useState } from "react";
 import {
-  FaBars,
   FaHome,
-  FaShoppingCart,
-  FaClipboardList,
-  FaCog,
-  FaChartLine,
-  FaUsers,
-  FaSignOutAlt,
-  FaChevronDown,
-  FaChevronRight,
-  FaBox,
   FaUser,
   FaShoppingBag,
-  FaStamp,
-  FaProductHunt,
+  FaSignOutAlt,
+  FaChevronLeft,
+  FaChevronDown,
+  FaChevronRight,
+  FaMoneyBill,
 } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import { setTheme } from "../../store/user";
-import { ColorPicker } from "antd";
-import ThemeManager from "../ThemeManager";
-import ThemeSwitcherModal from "../ThemeSwitchModal";
 import { AiFillShop } from "react-icons/ai";
+import { FaStamp } from "react-icons/fa";
+import { Tooltip, Avatar, Badge } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
+import ThemeSwitcherModal from "../ThemeSwitchModal";
+import ThemeManager from "../ThemeManager";
 
-interface SidebarItem {
-  icon: React.ReactNode;
-  text: string;
-  path: string;
-  subItems?: Array<{ text: string; path: string }>;
-}
-
-const Sidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
-    {}
-  );
-  const dispatch = useDispatch<any>();
-  const { theme } = useSelector((state: any) => state.user);
-  const [previouslyExpandedItems, setPreviouslyExpandedItems] = useState<
-    Record<string, boolean>
-  >({});
+const Sidebar = () => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [expandedItems, setExpandedItems] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleMouseEnter = (): void => {
-    setIsOpen(true);
-    setExpandedItems(previouslyExpandedItems);
-  };
-
-  const handleMouseLeave = (): void => {
-    setIsOpen(false);
-    setPreviouslyExpandedItems(expandedItems);
-    setExpandedItems({});
-  };
-
-  const handleNavigation = (path: string): void => {
-    navigate(path);
-  };
-
-  const toggleExpand = (key: string): void => {
-    setExpandedItems((prev) => {
-      const newState = { ...prev, [key]: !prev[key] };
-      setPreviouslyExpandedItems(newState);
-      return newState;
-    });
-  };
-  console.log(previouslyExpandedItems, "expanderd items");
-  console.log(theme, "theme");
-  const sidebarItems: SidebarItem[] = [
+  const sidebarItems = [
     {
       icon: <FaHome size={20} />,
       text: "Dashboard",
@@ -90,46 +44,24 @@ const Sidebar: React.FC = () => {
       path: "/inventory",
     },
     {
+      icon: <FaMoneyBill size={20} />,
+      text: "POS",
+      path: "/sale/pos",
+    },
+    {
       icon: <FaStamp size={20} />,
       text: "Sale",
       path: "/sale",
       subItems: [
         { text: "Sale Invoices", path: "/sale/invoices" },
-        // { text: "Create Purchase Entry", path: "/PurchaseEntryForm/create" },
-        // { text: "View Purchase Form", path: "/GetPurchaseOrderForm" },
         { text: "Quotation", path: "/sale/quotation" },
         { text: "Payment Invoice", path: "/sale/payment-invoice" },
         { text: "Sale Order", path: "/sale/order" },
         { text: "Deliver Challan", path: "/sale/delivery-challan" },
         { text: "Sale Return/CR", path: "/sale/credit-note" },
-        { text: "POS", path: "/sale/pos" },
+        // { text: "POS", path: "/sale/pos" },
       ],
     },
-    // {
-    //   icon: <FaClipboardList size={20} />,
-    //   text: "Add Category",
-    //   path: "/Addcategory",
-    // },
-    // {
-    //   icon: <FaClipboardList size={20} />,
-    //   text: "Verify Purchase Order",
-    //   path: "/VerifyPurchaseOrder",
-    // },
-    // {
-    //   icon: <FaChartLine size={20} />,
-    //   text: "Analytics",
-    //   path: "/analytics",
-    // },
-    // {
-    //   icon: <FaUsers size={20} />,
-    //   text: "Customers",
-    //   path: "/customers",
-    // },
-    // {
-    //   icon: <FaCog size={20} />,
-    //   text: "Settings",
-    //   path: "/settings",
-    // },
     {
       icon: <FaSignOutAlt size={20} />,
       text: "Logout",
@@ -137,17 +69,62 @@ const Sidebar: React.FC = () => {
     },
   ];
 
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const toggleExpand = (key) => {
+    setExpandedItems((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleNavigation = (path, item = null) => {
+    if (item?.subItems) {
+      toggleExpand(item.text);
+    } else {
+      navigate(path);
+    }
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <div
-      className={`h-screen bg-white border-r-2 text-gray-800 transition-all duration-300 ease-in-out ${
+      className={`relative min-h-screen flex flex-col justify-between  max-h-[100vh] overflow-y-auto overflow-x-hidden border-r transition-all duration-300 ${
         isOpen ? "w-64" : "w-20"
       }`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      style={{
+        background: "linear-gradient(to bottom, #ffffff, #f8f9fa)",
+      }}
     >
-      <div className="flex items-center justify-between h-16 px-4 text-gray-800">
-        {isOpen && (
-          <span className="text-xl font-semibold text-white">Menu</span>
+      <div>
+
+     
+      {/* Toggle Button */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute -right-3 top-6 bg-white hover:bg-gray-50 border shadow-md rounded-full p-1.5 transition-colors z-10"
+      >
+        <FaChevronLeft
+          size={16}
+          className={`text-gray-600 transition-transform duration-300 ${
+            isOpen ? "" : "rotate-180"
+          }`}
+        />
+      </button>
+
+      {/* Logo Area */}
+      <div className="h-16 flex items-center justify-between px-4 border-b bg-white/50 backdrop-blur-sm">
+        {isOpen ? (
+          <>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary-500 to-purple-500 bg-clip-text text-transparent">
+              Admin Panel
+            </h1>
+            <div className="mr-2">
+              <ThemeSwitcherModal />
+            </div>
+          </>
+        ) : (
+          <span className="text-xl font-bold text-primary-500 mx-auto">J</span>
         )}
       </div>
 
@@ -155,128 +132,114 @@ const Sidebar: React.FC = () => {
         <ThemeManager />
       </div>
 
-      <style>
-        {`
-        .floating-label-wrapper.is-occupied:focus-within .floating-label {
-  color: ${theme} !important; 
-}
-        `}
-      </style>
-
-      <nav className="mt-8 px-2">
+      {/* Navigation Menu */}
+      <nav className="mt-6 px-3">
         {sidebarItems.map((item, index) => (
-          <SidebarItem
-            key={index}
-            icon={item.icon}
-            text={item.text}
-            isOpen={isOpen}
-            active={location.pathname === item.path}
-            onClick={() =>
-              item.subItems
-                ? toggleExpand(item.text)
-                : handleNavigation(item.path)
-            }
-            expanded={expandedItems[item.text]}
-            hasSubItems={!!item.subItems}
-          >
-            {item.subItems && expandedItems[item.text] && (
-              <div className="ml-6 mt-2">
+          <div key={index} className="mb-2">
+            <Tooltip
+              title={!isOpen ? item.text : ""}
+              placement="right"
+              mouseEnterDelay={0.5}
+            >
+              <button
+                title={item.text}
+                onClick={() => handleNavigation(item.path, item)}
+                className={`w-full flex items-center px-4 py-3 rounded-lg transition-all
+                  ${isOpen ? "justify-start" : "justify-center"}
+                  ${
+                    isActive(item.path)
+                      ? "bg-primary-50 text-primary-500 shadow-sm border-l-4 border-primary-500"
+                      : "text-gray-600 hover:bg-primary-50 hover:text-primary-500"
+                  }
+                  group relative
+                `}
+              >
+                <span
+                  className={`flex items-center ${
+                    !isOpen && "justify-center"
+                  } w-full`}
+                >
+                  {item.icon}
+                  {isOpen && (
+                    <span className="ml-3 font-medium whitespace-nowrap">
+                      {item.text}
+                    </span>
+                  )}
+                  {isOpen && item.subItems && (
+                    <span className="ml-auto">
+                      {expandedItems[item.text] ? (
+                        <FaChevronDown size={12} />
+                      ) : (
+                        <FaChevronRight size={12} />
+                      )}
+                    </span>
+                  )}
+                </span>
+              </button>
+            </Tooltip>
+
+            {/* Submenu */}
+            {isOpen && item.subItems && expandedItems[item.text] && (
+              <div className="mt-2 ml-4 space-y-1">
                 {item.subItems.map((subItem, subIndex) => (
-                  <SidebarItem
+                  <Tooltip
                     key={subIndex}
-                    text={subItem.text}
-                    isOpen={isOpen}
-                    active={location.pathname === subItem.path}
-                    onClick={() => handleNavigation(subItem.path)}
-                    subItem
-                  />
+                    title={!isOpen ? subItem.text : ""}
+                    placement="right"
+                  >
+                    <button
+                      onClick={() => handleNavigation(subItem.path)}
+                      className={`w-full flex items-center px-4 py-2.5 rounded-md
+                        ${
+                          isActive(subItem.path)
+                            ? "bg-primary-50 text-primary-500"
+                            : "text-gray-600 hover:bg-primary-50 hover:text-primary-500"
+                        }
+                        transition-colors text-sm group
+                      `}
+                    >
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full
+                        ${
+                          isActive(subItem.path)
+                            ? "bg-primary-500"
+                            : "bg-gray-400 group-hover:bg-primary-500"
+                        }
+                        transition-colors
+                      `}
+                      />
+                      <span className="ml-3">{subItem.text}</span>
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             )}
-          </SidebarItem>
+          </div>
         ))}
       </nav>
-
+      </div>
+      {/* User Profile */}
       {isOpen && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 w-64">
-          <div className="flex items-center px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg shadow-lg">
-            <img
-              src="https://icons.veryicon.com/png/o/miscellaneous/user-avatar/user-avatar-male-5.png"
-              alt="User"
-              className="w-12 h-12 rounded-full border-2 border-white shadow-md"
-            />
-            <div className="ml-3 flex-grow">
-              <h3 className="text-lg font-semibold text-white">John Doe</h3>
-              <p className="text-sm text-primary-100">Administrator</p>
-            </div>
-            <div className="flex gap-2">
-              {/* <button className="text-primary-100 hover:text-white transition-colors duration-200">
-                <FaCog size={20} />
-              </button> */}
-              <ThemeSwitcherModal />
+        <div className=" bottom-0 left-0 right-0 p-4">
+          <div className="bg-white rounded-lg p-3 shadow-sm border">
+            <div className="flex items-center">
+              <Badge dot status="success" offset={[-4, 36]}>
+                <Avatar
+                  size={40}
+                  src="/api/placeholder/40/40"
+                  className="!bg-primary-500"
+                >
+                  JD
+                </Avatar>
+              </Badge>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-800">John Doe</p>
+                <p className="text-xs text-gray-500">Administrator</p>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-interface SidebarItemProps {
-  icon?: React.ReactNode;
-  text: string;
-  isOpen: boolean;
-  active?: boolean;
-  onClick: () => void;
-  expanded?: boolean;
-  hasSubItems?: boolean;
-  children?: React.ReactNode;
-  subItem?: boolean;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({
-  icon,
-  text,
-  isOpen,
-  active = false,
-  onClick,
-  expanded,
-  hasSubItems,
-  children,
-  subItem = false,
-}) => {
-  return (
-    <div>
-      <div
-        className={`
-        flex items-center py-3 px-2 mb-1 rounded-md cursor-pointer
-        transition-colors duration-200  font-medium
-        ${
-          active
-            ? "bg-primary-50 text-primary-500 border-l-2 border-primary-500"
-            : "text-gray-900 hover:bg-primary-50"
-        }
-        ${subItem ? "pl-6" : ""}
-      `}
-        onClick={onClick}
-      >
-        {!subItem && icon && (
-          <div className={`${isOpen ? "mr-3" : "mx-auto"}`}>{icon}</div>
-        )}
-        {isOpen && (
-          <span className="text-md flex-grow text-nowrap">{text}</span>
-        )}
-        {isOpen && hasSubItems && (
-          <div className="ml-auto">
-            {expanded ? (
-              <FaChevronDown size={12} />
-            ) : (
-              <FaChevronRight size={12} />
-            )}
-          </div>
-        )}
-      </div>
-      {children}
     </div>
   );
 };

@@ -13,10 +13,15 @@ export const createSaleOrder = createAsyncThunk(
   }
 );
 
-export const getAllSaleOrder = createAsyncThunk(`/api/getAllSaleOrder`, async (page:any) => {
-  const { status, data } = await api.get(`/api/salesOrder?page=${page}`);
-  return { status, data };
-});
+export const getAllSaleOrder = createAsyncThunk(
+  `/api/getAllSaleOrder`,
+  async (payload: any) => {
+    const { status, data } = await api.get(
+      `/api/salesOrder?page=${payload.page}&search=${payload.search}`
+    );
+    return { status, data };
+  }
+);
 
 export const deleteSaleOrder = createAsyncThunk(
   `/deleteSaleOrder`,

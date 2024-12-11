@@ -13,10 +13,15 @@ export const createSaleInvoice = createAsyncThunk(
   }
 );
 
-export const getAllSaleInvoice = createAsyncThunk(`/api/getAllSaleInvoice`, async () => {
-  const { status, data } = await api.get("/api/salesInvoice");
-  return { status, data };
-});
+export const getAllSaleInvoice = createAsyncThunk(
+  `/api/getAllSaleInvoice`,
+  async (payload: any) => {
+    const { status, data } = await api.get(
+      `/api/salesInvoice?page=${payload.page}&search=${payload.search}&startDate=${payload.startDate}&endDate=${payload.endDate}`
+    );
+    return { status, data };
+  }
+);
 
 export const deleteSaleInvoice = createAsyncThunk(
   `/deleteSaleInvoice`,

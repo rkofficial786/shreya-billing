@@ -4,6 +4,7 @@ import {
   deleteParty,
   getAllParties,
   getPartyById,
+  getPartyTransactionById,
   updateParty,
 } from "./actions";
 
@@ -21,12 +22,18 @@ export const partySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getPartyById.fulfilled, (state, { payload }) => {});
+    builder.addCase(
+      getPartyTransactionById.fulfilled,
+      (state, { payload }) => {}
+    );
     builder.addCase(deleteParty.fulfilled, (state, { payload }) => {});
     builder.addCase(updateParty.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllParties.fulfilled, (state, { payload }) => {
       if (payload.status == 200) {
         if (payload.data.success) {
           state.parties = payload.data.parties;
+        } else {
+          state.parties = [];
         }
       }
     });
@@ -36,5 +43,12 @@ export const partySlice = createSlice({
 
 export const { setInitialState } = partySlice.actions;
 
-export { getPartyById, deleteParty, updateParty, getAllParties, createParty };
+export {
+  getPartyById,
+  deleteParty,
+  updateParty,
+  getAllParties,
+  createParty,
+  getPartyTransactionById,
+};
 export default partySlice.reducer;

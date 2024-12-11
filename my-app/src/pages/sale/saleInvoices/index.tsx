@@ -35,17 +35,32 @@ const SaleInvoices = () => {
   const [selectedRecord, setSelectedRecord] = useState({});
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
 
-  const callGetSaleInvoice = async () => {
+  const callGetSaleInvoice = async (
+    page = 1,
+    search = "",
+    startDate = "",
+    endDate = ""
+  ) => {
     try {
-      const { payload } = await dispatch(getAllSaleInvoice());
+      const { payload } = await dispatch(
+        getAllSaleInvoice({
+          page,
+
+          search,
+          startDate,
+          endDate,
+        })
+      );
+
       if (payload.data.success) {
-        // Transform the data to match table requirements
         const transformedData = payload.data.salesInvoices.map((invoice) => ({
           key: invoice._id,
           date: new Date(invoice.invoiceDate).toLocaleDateString(),
@@ -59,7 +74,6 @@ const SaleInvoices = () => {
           balanceDue: invoice.balance,
           items: invoice.items,
           stateOfSupply: invoice.stateOfSupply,
-
           paymentOption: invoice.paymentOption,
           description: invoice.description,
         }));
@@ -78,8 +92,38 @@ const SaleInvoices = () => {
   };
 
   useEffect(() => {
+    callGetSaleInvoice(
+      pagination.current,
+      searchText,
+      dateRange?.[0] || "",
+      dateRange?.[1] || ""
+    );
+  }, [searchText, dateRange]);
+
+  useEffect(() => {
     callGetSaleInvoice();
   }, []);
+
+  const handleTableChange = (newPagination) => {
+    setPagination(newPagination);
+    callGetSaleInvoice(
+      newPagination.current,
+      searchText,
+      dateRange?.[0] || "",
+      dateRange?.[1] || ""
+    );
+  };
+
+  const handleDateRangeChange = (dates) => {
+    if (dates) {
+      setDateRange([
+        dates[0].startOf("day").toISOString(),
+        dates[1].endOf("day").toISOString(),
+      ]);
+    } else {
+      setDateRange(null);
+    }
+  };
 
   const handleEdit = (record, action) => {
     setSelectedRecord(record);
@@ -167,7 +211,9 @@ const SaleInvoices = () => {
           <Button
             type="link"
             icon={<PrinterOutlined />}
-            onClick={() => handleInvoiceAction(record, setPreviewVisible, setSelectedInvoice)}
+            onClick={() =>
+              handleInvoiceAction(record, setPreviewVisible, setSelectedInvoice)
+            }
           />
           <Button type="link" danger onClick={() => handleEdit(record, "edit")}>
             Edit
@@ -187,8 +233,8 @@ const SaleInvoices = () => {
       <SalesStatistics salesInvoices={salesInvoiceData} />
       <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
         <div className="flex flex-wrap items-center gap-4">
-          <RangePicker className="w-64" />
-          <Select
+          <RangePicker className="w-64" onChange={handleDateRangeChange} />
+          {/* <Select
             defaultValue="ALL FIRMS"
             className="w-40"
             options={[
@@ -196,11 +242,13 @@ const SaleInvoices = () => {
               { value: "FIRM1", label: "FIRM 1" },
               { value: "FIRM2", label: "FIRM 2" },
             ]}
-          />
+          /> */}
           <Input
             placeholder="Search transactions..."
             prefix={<SearchOutlined />}
             className="w-64"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
         <div className="flex gap-2">

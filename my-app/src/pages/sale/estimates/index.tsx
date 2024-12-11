@@ -27,21 +27,32 @@ import {
   getAllQuotation,
 } from "../../../store/sale/quotation";
 import toast from "react-hot-toast";
+import InvoicePreviewModal, { handleInvoiceAction } from "./InvoiceTempelate";
 
 const Estimates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [quotationData, setQuotationData] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState({});
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
 
-  const callGetQuotation = async () => {
+  const callGetQuotation = async (page = 1, pageSize = 10, search = "") => {
     try {
-      const { payload } = await dispatch(getAllQuotation());
-      console.log(payload, "payload hai");
+      const { payload } = await dispatch(
+        getAllQuotation({
+          page,
+          pageSize,
+          search,
+        })
+      );
 
       if (payload.data.success) {
         // Transform the data to match the table structure
@@ -57,6 +68,7 @@ const Estimates = () => {
         }));
 
         setQuotationData(transformedData);
+        setFilteredData(transformedData);
         setPagination({
           current: payload.data.pagination.currentPage,
           pageSize: payload.data.pagination.pageSize,
@@ -73,6 +85,23 @@ const Estimates = () => {
     callGetQuotation();
   }, []);
 
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    callGetQuotation(1, pagination.pageSize, value);
+  };
+
+  const handleTableChange = (newPagination, filters, sorter) => {
+    const { current, pageSize } = newPagination;
+
+    // If search term exists, pass it to the API
+    callGetQuotation(current, pageSize, searchTerm);
+
+    setPagination({
+      current,
+      pageSize,
+      total: pagination.total,
+    });
+  };
   const columns = [
     {
       title: (
@@ -193,7 +222,11 @@ const Estimates = () => {
                   label: "Delete Quotation",
                   onClick: () => handleDelete(record.key),
                 },
-                { key: "3", label: "Download PDF" },
+                {
+                  key: "3",
+                  label: "Download PDF",
+                  onClick: () => handleInvoiceAction(record),
+                },
                 // { key: "4", label: "Send via Email" },
                 // { key: "5", label: "Mark as Accepted" },
                 // { key: "6", label: "Mark as Rejected" },
@@ -208,6 +241,10 @@ const Estimates = () => {
     },
   ];
 
+  const handleInvoiceAction = (record) => {
+    setPreviewVisible(true);
+    setSelectedInvoice(record);
+  };
   const handleConvert = (id) => {
     // Add your convert logic here
     console.log("Converting quotation:", id);
@@ -218,7 +255,7 @@ const Estimates = () => {
       const { payload } = await dispatch(deleteQuotation(id));
       if (payload.data.success) {
         toast.success("Quotation Deleted Successfully");
-        callGetQuotation();
+        callGetQuotation(pagination.current, pagination.pageSize, searchTerm);
       }
     } catch (error) {
       console.log(error);
@@ -274,6 +311,10 @@ const Estimates = () => {
             placeholder="Search by name, reference number..."
             className="max-w-md"
             size="large"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onPressEnter={(e) => handleSearch(e.target.value)}
+            allowClear
           />
         </div>
       </div>
@@ -309,6 +350,12 @@ const Estimates = () => {
           }
         />
       </div>
+
+      <InvoicePreviewModal
+        invoice={selectedInvoice}
+        visible={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+      />
     </div>
   );
 };

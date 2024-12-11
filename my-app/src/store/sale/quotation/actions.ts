@@ -4,7 +4,7 @@ import api from "../../../apis/api";
 export const createQuotation = createAsyncThunk(
   `/createQuotation`,
   async (payload: any) => {
-    const { status, data } = await api.post("/api/quotation",payload, {
+    const { status, data } = await api.post("/api/quotation", payload, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -15,8 +15,10 @@ export const createQuotation = createAsyncThunk(
 
 export const getAllQuotation = createAsyncThunk(
   `/api/getAllQuotation `,
-  async () => {
-    const { status, data } = await api.get("/api/quotation ");
+  async (payload: any) => {
+    const { status, data } = await api.get(
+      `/api/quotation?page=${payload.page}&search=${payload.search}`
+    );
     return { status, data };
   }
 );
