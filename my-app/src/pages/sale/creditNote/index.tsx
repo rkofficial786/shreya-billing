@@ -130,6 +130,7 @@ const CreditNote = () => {
       dataIndex: "key",
       key: "key",
       width: 50,
+      
     },
     {
       title: "DATE",

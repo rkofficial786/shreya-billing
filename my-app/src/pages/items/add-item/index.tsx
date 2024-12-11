@@ -50,7 +50,7 @@ const AddItemPage = () => {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const { editItem } = useSelector((state: any) => state.items);
-console.log(editItem,"edit oitem");
+  console.log(editItem, "edit oitem");
 
   const [isProductType, setIsProductType] = useState(true);
   const [unitModalVisible, setUnitModalVisible] = useState(false);
@@ -81,7 +81,7 @@ console.log(editItem,"edit oitem");
   // Set form values when editItem changes
   useEffect(() => {
     if (editItem && id) {
-      console.log(id, "id in");
+      // console.log(id, "id in");
 
       // Transform the edit item data to match form fields
       const formValues = {
@@ -138,6 +138,7 @@ console.log(editItem,"edit oitem");
   };
 
   const transformFormDataToPayload = (formData: FormData, fileList: any[]) => {
+    console.log(formData, "formdata");
     const {
       // Basic Details
       itemName,
@@ -184,6 +185,7 @@ console.log(editItem,"edit oitem");
 
     // Append basic details
     payload.append("name", itemName);
+    console.log(itemHSN, "itemHSN");
     if (itemHSN) payload.append("hsn", itemHSN);
     payload.append("itemCode", itemCode);
     if (category) payload.append("category", category);
@@ -272,6 +274,7 @@ console.log(editItem,"edit oitem");
     try {
       setIsLoading(true);
       const formData = await form.validateFields();
+      console.log(formData, "formData1");
       const payloadApi = transformFormDataToPayload(formData, fileList);
       //@ts-ignore
 

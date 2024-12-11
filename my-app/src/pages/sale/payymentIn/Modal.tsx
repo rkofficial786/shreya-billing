@@ -135,13 +135,13 @@ const PaymentModal = ({
                   );
                 }}
               >
-                {parties.map((party) => (
+                {parties?.map((party) => (
                   <Option
                     key={party._id}
                     value={party._id}
                     phoneNumber={party.phone}
                   >
-                    {party.name} - {party.phone}
+                    {party?.name} - {party?.phone}
                   </Option>
                 ))}
               </FloatingLabelSelect>
@@ -161,7 +161,7 @@ const PaymentModal = ({
                 </Button>
               </div>
 
-              {payments.map((payment, index) => (
+              {payments?.map((payment, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <Select
                     value={payment.type}
@@ -174,7 +174,7 @@ const PaymentModal = ({
                     <Option value="Cash">Cash</Option>
                     <Option value="Cheque">Cheque</Option>
                   </Select>
-                  {payment.type === "Cheque" && (
+                  {payment?.type === "Cheque" && (
                     <Input
                       placeholder="Ref No"
                       value={payment.refNo}

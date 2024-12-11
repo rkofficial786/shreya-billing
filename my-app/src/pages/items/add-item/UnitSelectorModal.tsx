@@ -14,7 +14,7 @@ export const UnitSelectorModal = ({ visible, onClose, onSelect }: UnitSelectorMo
   return (
     <Modal
       title="Select Unit"
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       width={600}
       footer={[

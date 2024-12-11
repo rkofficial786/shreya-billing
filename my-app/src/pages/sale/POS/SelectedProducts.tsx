@@ -7,6 +7,7 @@ const SelectedProducts = ({
   updateQuantity,
   updateDiscount,
 }) => {
+  console.log(selectedProducts, "selected");
   const selectedProductColumns = [
     { title: "#", dataIndex: "key", key: "key", width: 50 },
     { title: "Item Code", dataIndex: "code", key: "code" },
@@ -40,7 +41,7 @@ const SelectedProducts = ({
       title: "Price/Unit (₹)",
       dataIndex: "price",
       key: "price",
-      render: (price) => price.toFixed(2),
+      render: (price) => price?.toFixed(2),
     },
     {
       title: "Discount (₹)",

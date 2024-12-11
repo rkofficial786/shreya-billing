@@ -126,6 +126,7 @@ const PaymentIn = () => {
         })
       );
 
+      console.log(payload.data.success, "data");
       if (payload.data.success) {
         setData(payload.data.paymentsIn);
         setPagination((prevPagination) => ({
@@ -236,10 +237,10 @@ const PaymentIn = () => {
     },
     {
       title: "PARTY NAME",
-      dataIndex: "party.name",
+      dataIndex: "party?.name",
       key: "partyName",
       filterable: true,
-      render: (_, record) => record.party.name,
+      render: (_, record) => record?.party?.name,
     },
     // {
     //   title: "CATEGORY NAME",

@@ -60,30 +60,30 @@ const Items = () => {
   }, []);
 
   const [transactions] = useState([
-    {
-      id: 1,
-      type: "Sale",
-      invoiceNo: "INV-001",
-      name: "Rupraj",
-      date: "20/10/2024",
-      quantity: 10,
-      pricePerUnit: 100.0,
-      status: "Partial",
-      paymentMethod: "Credit Card",
-      total: 1000.0,
-    },
-    {
-      id: 2,
-      type: "Purchase",
-      invoiceNo: "PO-001",
-      name: "Supplier Co.",
-      date: "19/10/2024",
-      quantity: 20,
-      pricePerUnit: 80.0,
-      status: "Complete",
-      paymentMethod: "Bank Transfer",
-      total: 1600.0,
-    },
+    // {
+    //   id: 1,
+    //   type: "Sale",
+    //   invoiceNo: "INV-001",
+    //   name: "Rupraj",
+    //   date: "20/10/2024",
+    //   quantity: 10,
+    //   pricePerUnit: 100.0,
+    //   status: "Partial",
+    //   paymentMethod: "Credit Card",
+    //   total: 1000.0,
+    // },
+    // {
+    //   id: 2,
+    //   type: "Purchase",
+    //   invoiceNo: "PO-001",
+    //   name: "Supplier Co.",
+    //   date: "19/10/2024",
+    //   quantity: 20,
+    //   pricePerUnit: 80.0,
+    //   status: "Complete",
+    //   paymentMethod: "Bank Transfer",
+    //   total: 1600.0,
+    // },
   ]);
 
   const handleMenuClick = (record, action) => {

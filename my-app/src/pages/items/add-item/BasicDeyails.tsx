@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Card, Divider, Form, Input, Modal } from "antd";
+import { Button, Card, Divider, Form, Input, Modal, Select } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   FloatingLabelInput,
@@ -8,7 +8,8 @@ import {
 import Barcode from "react-barcode";
 import { useDispatch } from "react-redux";
 import { createCategory, getAllCategories } from "../../../store/category";
-
+import { hsnData } from "../../../helpers/hsn";
+const { Option } = Select;
 const BarcodeDisplay: React.FC<{ itemCode?: string; itemDetails?: any }> = ({
   itemCode,
   itemDetails,
@@ -28,7 +29,8 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const dispatch = useDispatch<any>();
   const [categoryForm] = Form.useForm();
-  
+  const [filteredHSN, setFilteredHSN] = useState(hsnData);
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -53,7 +55,7 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
 
   const setBarCode = () => {
     // Get the current value of itemCode from the form
-    const currentItemCode = form.getFieldValue('itemCode');
+    const currentItemCode = form.getFieldValue("itemCode");
 
     if (!currentItemCode) {
       // If itemCode is empty, generate a random code
@@ -79,6 +81,17 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
       console.error("Error creating category:", error);
     }
   };
+  // hsn
+  const handleSearch = (value) => {
+    // Filter the HSN data by both HSN_CD and HSN_Description
+    const lowerValue = value.toLowerCase();
+    const filtered = hsnData.filter(
+      (item) =>
+        item.HSN_CD.toLowerCase().includes(lowerValue) ||
+        item.HSN_Description.toLowerCase().includes(lowerValue)
+    );
+    setFilteredHSN(filtered);
+  };
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -92,11 +105,24 @@ export const BasicDetails = ({ onUnitClick, generateRandomCode, form }) => {
 
       <div className="flex gap-4">
         <Form.Item name="itemHSN" className="flex-1 mb-0">
-          <FloatingLabelInput
+          <FloatingLabelSelect
+            placeholder="Select HSN Code"
+            allowClear
             className="mb-0"
-            label="Search HSN"
-            suffix={<SearchOutlined className="text-gray-400" />}
-          />
+            showSearch
+            onSearch={handleSearch}
+            filterOption={false}
+            dropdownRender={(menu) => <div>{menu}</div>}
+          >
+            {filteredHSN.map((item) => (
+              <Option key={item.HSN_CD} value={item.HSN_CD}>
+                {item.HSN_CD} -{" "}
+                {item.HSN_Description.length > 20
+                  ? item.HSN_Description.slice(0, 20) + "..."
+                  : item.HSN_Description}
+              </Option>
+            ))}
+          </FloatingLabelSelect>
         </Form.Item>
 
         <Form.Item name="unit" className="flex-1 mb-0">

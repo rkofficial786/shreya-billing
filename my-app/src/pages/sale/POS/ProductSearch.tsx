@@ -32,7 +32,7 @@ const ProductSearch = ({
               <div className="text-sm text-gray-600">{product.name}</div>
             </div>
             <div className="text-right">
-              <div className="font-medium">₹{product.price.toFixed(2)}</div>
+              <div className="font-medium">₹{product?.price?.toFixed(2)}</div>
             </div>
           </div>
         ))}

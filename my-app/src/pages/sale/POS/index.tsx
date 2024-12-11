@@ -27,6 +27,7 @@ const POS = () => {
   const [saved, setSaved] = useState(false);
   const { parties } = useSelector((state: any) => state.party);
 
+  console.log(parties, "parties");
   useEffect(() => {
     const callGetAllParty = async () => {
       await dispatch(getAllParties());
@@ -86,7 +87,7 @@ const POS = () => {
       toast.error("Please Enter Amount Received");
       return;
     }
-
+    console.log(selectedCustomer, "customerid");
     const payloadApi = {
       customer: selectedCustomer.id,
       items: selectedProducts.map((item) => ({
@@ -96,7 +97,7 @@ const POS = () => {
         unit: item.unit,
         pricePerUnit: item.price,
         discount: item.discount || 0,
-        taxApplied: (item.price * item.quantity * (item.tax / 100)).toFixed(2),
+        taxApplied: (item?.price * item?.quantity * (item?.tax / 100))?.toFixed(2),
         total: selectedProducts
           .reduce(
             (sum, item) =>

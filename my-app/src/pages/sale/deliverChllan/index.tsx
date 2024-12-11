@@ -47,6 +47,8 @@ const DeliveryChallan = () => {
         })
       );
 
+      console.log(payload,"challan")
+
       if (payload.data.success) {
         const tableData = payload?.data?.deliveryChallans.map(
           (item, index) => ({

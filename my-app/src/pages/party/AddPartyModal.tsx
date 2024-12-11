@@ -1,4 +1,3 @@
-
 //@ts-nocheck
 
 import React, { useState, useEffect } from "react";
@@ -26,11 +25,11 @@ import {
   FloatingLabelTextArea,
 } from "../../component/input";
 import dayjs from "dayjs";
+import FileUpload from "../../component/upload";
 
 const { Title } = Typography;
 
-const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
-  
+const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
   const [loading, setLoading] = useState(false);
   const [enableShipping, setEnableShipping] = useState(false);
   const [customLimit, setCustomLimit] = useState(false);
@@ -38,8 +37,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
     { key: "", value: "" },
   ]);
 
-  console.log(initialValues,"inital values");
-  
+  console.log(initialValues, "inital values");
 
   // Initialize form with data when in edit mode
   useEffect(() => {
@@ -55,9 +53,9 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
         billingAddress: initialValues.gstAndAddress.billingAddress,
         openingBalance: initialValues.creditAndBlance.openingBalance,
         asOfDate: dayjs(initialValues.creditAndBlance.date),
-        creditLimit: initialValues.creditAndBlance.limit
+        creditLimit: initialValues.creditAndBlance.limit,
       };
-      
+
       // Set shipping address if exists
       if (initialValues.gstAndAddress.shipping?.length > 0) {
         setEnableShipping(true);
@@ -72,13 +70,17 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
       // Transform additional fields to match the component's structure
       if (initialValues.additionalFields?.length > 0) {
         const transformedFields = initialValues.additionalFields
-          .filter(field => field.key && field.value)
-          .map(field => ({
+          .filter((field) => field.key && field.value)
+          .map((field) => ({
             key: field.key,
-            value: field.value
+            value: field.value,
           }));
-        
-        setAdditionalFields(transformedFields.length > 0 ? transformedFields : [{ key: "", value: "" }]);
+
+        setAdditionalFields(
+          transformedFields.length > 0
+            ? transformedFields
+            : [{ key: "", value: "" }]
+        );
       }
 
       // Set all form values
@@ -98,7 +100,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
 
       // Create additionalFields object from the array
       const additionalFieldsData = {};
-      additionalFields.forEach(field => {
+      additionalFields.forEach((field) => {
         if (field.key && field.value) {
           additionalFieldsData[field.key] = field.value;
         }
@@ -114,15 +116,15 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
           state: values.state,
           email: values.emailId,
           billingAddress: values.billingAddress,
-          shipping: enableShipping ? [values.shippingAddress] : []
+          shipping: enableShipping ? [values.shippingAddress] : [],
         },
         creditAndBlance: {
           openingBalance: values.openingBalance,
           date: values.asOfDate.toISOString(),
-          limit: customLimit ? values.creditLimit : undefined
+          limit: customLimit ? values.creditLimit : undefined,
         },
         additionalFields: additionalFieldsData,
-        ...(initialValues?._id ? { _id: initialValues._id } : {})
+        ...(initialValues?._id ? { _id: initialValues._id } : {}),
       };
 
       await onSubmit(finalValues);
@@ -208,11 +210,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
     },
     {
       key: "credit",
-      label: (
-        <div className="flex items-center gap-2">
-          Credit & Balance
-        </div>
-      ),
+      label: <div className="flex items-center gap-2">Credit & Balance</div>,
       children: (
         <div className="space-y-6">
           <Form.Item name="openingBalance">
@@ -224,10 +222,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
           </Form.Item>
 
           <Form.Item name="asOfDate">
-            <DatePicker
-              className="w-full"
-              placeholder="As Of Date"
-            />
+            <DatePicker className="w-full" placeholder="As Of Date" />
           </Form.Item>
 
           <div className="space-y-2">
@@ -294,6 +289,46 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
         </div>
       ),
     },
+    {
+      key: "attachment",
+      label: "Attachment Fields",
+      children: (
+        <div className="space-y-4">
+          {additionalFields.map((field, index) => (
+            <div key={index} className="flex gap-4">
+              <Input
+                placeholder="Attachment Name"
+                value={field.key}
+                onChange={(e) =>
+                  handleFieldChange(index, "key", e.target.value)
+                }
+                className="w-1/2"
+              />
+              <FileUpload
+                index={index}
+                field={field}
+                handleFieldChange={handleFieldChange}
+              />
+              <Button
+                type="text"
+                icon={<DeleteOutlined />}
+                onClick={() => handleRemoveField(index)}
+                className="text-red-500 hover:text-red-600"
+              />
+            </div>
+          ))}
+
+          <Button
+            type="dashed"
+            onClick={handleAddField}
+            icon={<PlusOutlined />}
+            className="w-full"
+          >
+            Add Field
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -301,7 +336,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues ,form }) => {
       title={
         <div className="flex justify-between items-center">
           <Title level={5} className="m-0">
-            {initialValues ? 'Edit Party' : 'Add Party'}
+            {initialValues ? "Edit Party" : "Add Party"}
           </Title>
           <Space>
             {/* <Button
