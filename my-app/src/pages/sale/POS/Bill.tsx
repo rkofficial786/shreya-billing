@@ -1,18 +1,24 @@
 import React, { useState } from "react";
-import { 
-  Document, Page, Text, View, StyleSheet, PDFViewer, Font
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  PDFViewer,
+  Font,
 } from "@react-pdf/renderer";
 import { Modal, Button, Alert } from "antd";
 
 // Import the necessary fonts
 Font.register({
   family: "Roboto",
-  src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf"
+  src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf",
 });
 
 Font.register({
   family: "Roboto-Bold",
-  src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf"
+  src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf",
 });
 
 const styles = StyleSheet.create({
@@ -113,9 +119,7 @@ const BillPdf = ({ customer, items, total, visible, onClose }) => {
               <View style={styles.headerRight}>
                 <Text style={styles.invoiceDetails}>Acme Corporation</Text>
                 <Text style={styles.invoiceDetails}>123 Main St.</Text>
-                <Text style={styles.invoiceDetails}>
-                  Anytown, USA 12345
-                </Text>
+                <Text style={styles.invoiceDetails}>Anytown, USA 12345</Text>
               </View>
             </View>
 
@@ -140,10 +144,10 @@ const BillPdf = ({ customer, items, total, visible, onClose }) => {
                   <Text style={styles.tableCell}>{item.name}</Text>
                   <Text style={styles.tableCell}>{item.quantity}</Text>
                   <Text style={styles.tableCell}>
-                  Rs.{item.price.toFixed(2)}
+                    Rs.{item.price.toFixed(2)}
                   </Text>
                   <Text style={styles.tableCell}>
-Rs.{(item.discount || 0).toFixed(2)}
+                    Rs.{(item.discount || 0).toFixed(2)}
                   </Text>
                   <Text style={styles.tableCell}>
                     Rs.

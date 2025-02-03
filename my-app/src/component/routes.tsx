@@ -1,4 +1,4 @@
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import Party from "../pages/party";
 import Home from "../pages/Home";
 import Items from "../pages/items";
@@ -17,16 +17,30 @@ import PaymentInVoice from "../pages/sale/payymentIn";
 import Dashboard from "../pages/dashboard";
 import Pos from "../pages/sale/POS";
 import Inventory from "../pages/inventory";
+import { useSelector } from "react-redux";
+import Login from "../pages/auth";
+import { ProtectedRoute } from "../utils/privateRoute";
 
 function Router() {
+  const { token } = useSelector((state: any) => state.auth);
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<Home />}>
-          {/* All child routes will render inside Layout's Outlet */}
-
+        <Route
+          path="/"
+          element={token ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              {" "}
+              <Home />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/party" element={<Party />} />
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/items" element={<Items />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/items/add-item" element={<AddItemPage />} />

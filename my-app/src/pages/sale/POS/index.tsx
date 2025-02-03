@@ -25,6 +25,7 @@ const POS = () => {
   const dispatch = useDispatch<any>();
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [paymentType, setPaymentType] = useState<"cash" | "credit">("cash");
   const { parties } = useSelector((state: any) => state.party);
 
   console.log(parties, "parties");
@@ -34,6 +35,14 @@ const POS = () => {
     };
     callGetAllParty();
   }, []);
+
+  const handleAddCashCustomer = (values: { name: string; phone: string }) => {
+    setSelectedCustomer({
+      name: values.name,
+      phone: values.phone,
+      id: "4454545454",
+    });
+  };
 
   const callGetAllItems = async (value) => {
     const { payload } = await dispatch(getAllItemsBySearch(value));
@@ -97,7 +106,9 @@ const POS = () => {
         unit: item.unit,
         pricePerUnit: item.price,
         discount: item.discount || 0,
-        taxApplied: (item?.price * item?.quantity * (item?.tax / 100))?.toFixed(2),
+        taxApplied: (item?.price * item?.quantity * (item?.tax / 100))?.toFixed(
+          2
+        ),
         total: selectedProducts
           .reduce(
             (sum, item) =>
@@ -158,7 +169,11 @@ const POS = () => {
           handleCustomerSelect={handleCustomerSelect}
           saved={saved}
           handleClear={handleClear}
+          paymentType={paymentType}
+          setPaymentType={setPaymentType}
+          onAddCashCustomer={handleAddCashCustomer}
         />
+
         <SelectedProducts
           selectedProducts={selectedProducts}
           updateQuantity={updateQuantity}
@@ -167,7 +182,10 @@ const POS = () => {
       </div>
 
       <Card className="w-[400px] m-4 flex flex-col  justify-between h-screen relative">
-        <CustomerDetails selectedCustomer={selectedCustomer} />
+        <CustomerDetails
+          selectedCustomer={selectedCustomer}
+          paymentType={paymentType}
+        />
         <PaymentDetails
           selectedProducts={selectedProducts}
           paymentMode={paymentMode}

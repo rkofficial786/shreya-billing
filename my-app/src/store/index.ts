@@ -33,7 +33,7 @@ const reducers = combineReducers({
 const persistConfig = {
   key: "shreya-sw",
   storage,
-  whitelist: ["user", "items", "saleInvoice", "party"],
+  whitelist: ["user", "items", "saleInvoice", "party", "auth"],
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);
