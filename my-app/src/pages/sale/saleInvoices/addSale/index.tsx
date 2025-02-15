@@ -26,6 +26,7 @@ const AddSale = () => {
   const [receivedAmount, setReceivedAmount] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [saleInvoiceData, setSaleInvoiceData] = useState(null);
+  const [existingImg, setExistingImg] = useState([]);
   const navigate = useNavigate();
   const transformSaleInvoiceData = (data) => {
     if (!data) return null;
@@ -63,11 +64,21 @@ const AddSale = () => {
       party: data.party || "",
     };
 
+    if (data.img && data.img.length > 0) {
+      const mappedFiles = data.img.map((url, index) => ({
+        uid: `-${index}`,
+        name: `img ${index + 1}`,
+        status: "done",
+        url: url,
+      }));
+      setFileList(mappedFiles);
+    }
+
     return {
       formData,
       items: transformedItems,
       payments: transformedPayments,
-      images: data.img || [],
+
       documents: data.documents || [],
     };
   };
@@ -83,13 +94,14 @@ const AddSale = () => {
         const transformedData = transformSaleInvoiceData(
           payload.data.salesInvoice
         );
+        setExistingImg(payload.data.salesInvoice.img);
         setSaleInvoiceData(transformedData);
         setIsEditMode(true);
 
         form.setFieldsValue(transformedData.formData);
         setItems(transformedData.items);
         setPayments(transformedData.payments);
-        setFileList(transformedData.images);
+
         setDocList(transformedData.documents);
         setIsCash(transformedData.formData.paymentType === "Cash");
         setReceivedAmount(payload.data.salesInvoice.received);
@@ -269,7 +281,9 @@ const AddSale = () => {
         );
         formData.append(`items[${index}][amount]`, item.amount.toString());
       });
-
+      if (isEditMode) {
+        formData.append("existingImg", JSON.stringify(existingImg));
+      }
       // Add images and documents
       fileList.forEach((file, index) => {
         if (file.originFileObj) {
@@ -350,6 +364,8 @@ const AddSale = () => {
             setPayments={setPayments}
             payments={payments}
             form={form}
+            existingImg={existingImg}
+            setExistingImg={setExistingImg}
             totalReceivedAmount={totalReceivedAmount}
           />
 

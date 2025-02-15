@@ -344,7 +344,7 @@ const Party = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <div className="w-72 bg-white shadow-crisp">
+      <div className="w-80 bg-white shadow-crisp overflow-auto">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">

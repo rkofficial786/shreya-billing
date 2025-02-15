@@ -126,6 +126,10 @@ const PaymentDetails = ({
     }
   };
 
+
+  console.log(imageFileList,"image file list");
+  
+
   const uploadProps = (type) => ({
     customRequest: (options) => handleUpload(options, type),
     listType: type === "image" ? "picture" : "text",

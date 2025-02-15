@@ -60,7 +60,7 @@ const Estimates = () => {
           key: quotation._id,
           date: new Date(quotation.invoiceDate).toLocaleDateString("en-GB"),
           referenceNo: quotation.refNumber,
-          name: quotation.items[0]?.name || "N/A",
+          name: quotation.party.name || "N/A",
           totalAmount: quotation.total,
           balance: quotation.total,
           status: "Quotation Open",

@@ -38,6 +38,8 @@ const PaymentDetails = ({
   payments,
   totalReceivedAmount,
   form,
+  existingImg,
+  setExistingImg,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
 
@@ -122,6 +124,8 @@ const PaymentDetails = ({
   };
 
   const handleRemove = (file, type) => {
+    const matchingFile = existingImg.filter((item) => item != file.url);
+    setExistingImg(matchingFile);
     if (type === "image") {
       setImageFileList((prev) => prev.filter((item) => item.uid !== file.uid));
     } else {
@@ -132,6 +136,7 @@ const PaymentDetails = ({
       URL.revokeObjectURL(file.url);
     }
   };
+  console.log(imageFileList, "oimage file list");
 
   const uploadProps = (type) => ({
     customRequest: (options) => handleUpload(options, type),
@@ -166,7 +171,7 @@ const PaymentDetails = ({
             </FloatingLabelSelect>
 
             <InputNumber
-              value={payment.amount}
+              value={payment?.amount?.toFixed(2)}
               onChange={(value) =>
                 handlePaymentChange(payment.id, "amount", value || 0)
               }
@@ -230,6 +235,8 @@ const PaymentDetails = ({
         )}
         <hr />
 
+        <img src={imageFileList[0]} alt="" />
+
         {/* File upload buttons */}
         <Space direction="vertical" className="w-full">
           <Upload {...uploadProps("image")} className="w-full">
@@ -238,17 +245,15 @@ const PaymentDetails = ({
             </Button>
           </Upload>
 
-          <Upload {...uploadProps("document")} className="w-full">
+          {/* <Upload {...uploadProps("document")} className="w-full">
             <Button icon={<FileTextOutlined />} className="w-full">
               Add Document
             </Button>
-          </Upload>
+          </Upload> */}
         </Space>
       </div>
 
       <div className="space-y-4">
-       
-
         <div className="flex justify-between items-center">
           <span>Total</span>
           <span>₹{calculateTotal().toFixed(2)}</span>
