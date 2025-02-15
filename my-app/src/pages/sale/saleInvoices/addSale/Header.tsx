@@ -20,15 +20,17 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
   const handleCustomerSelect = (value, option) => {
     // Find the selected party
     const selectedParty = parties.find((party) => party._id === value);
+    console.log(selectedParty, "selected parry");
 
     if (selectedParty) {
       form.setFieldsValue({
-        customerName: value, // This will be the _id
+        customerName: selectedParty.name, // This will be the _id
         phoneNumber: selectedParty.phone,
         // You might want to generate or set reference number differently
         referenceNumber: `REF-${Date.now()}`,
         // If you need to set other fields based on party data:
         stateOfSupply: selectedParty.gstAndAddress?.state || "",
+        party: selectedParty._id,
       });
     }
   };
@@ -69,7 +71,7 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
           name="customerName"
           rules={[{ required: true, message: "Please select a customer" }]}
         >
-           <FloatingLabelSelect
+          <FloatingLabelSelect
             className="mb-0"
             showSearch
             label="Search by Name/Phone"
@@ -94,7 +96,9 @@ export const SalesFormHeader = ({ isCash, setIsCash, initialData, form }) => {
             ))}
           </FloatingLabelSelect>
         </Form.Item>
-
+        <Form.Item name="party" hidden>
+          <FloatingLabelInput />
+        </Form.Item>
         <Form.Item
           name="phoneNumber"
           className="mb-0"

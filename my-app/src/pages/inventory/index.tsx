@@ -238,7 +238,7 @@ const Inventory: React.FC = () => {
         <div className="flex gap-3">
           {record.image ? (
             <Image
-              src={record.image}
+              src={`https://www.shreyacollection.in${record.image}`}
               alt={record.name}
               className="rounded"
               width={80}

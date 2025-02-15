@@ -31,6 +31,9 @@ export const ItemsTable = ({
 
   // Handler for item selection
 
+  console.log(items,'items hai');
+  
+
   const handleItemChange = (key, field, value) => {
     console.log(key, value, field, "key value fields");
     // First find the item index

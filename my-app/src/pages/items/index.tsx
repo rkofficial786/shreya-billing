@@ -9,9 +9,8 @@ import {
   Dropdown,
   Menu,
   Tag,
-  Modal,
   Tooltip,
-  DatePicker,
+  Image,
 } from "antd";
 import {
   SearchOutlined,
@@ -19,14 +18,21 @@ import {
   EyeOutlined,
   EditOutlined,
   DeleteOutlined,
-  DownloadOutlined,
-  ShareAltOutlined,
-  FilterOutlined,
   MoreOutlined,
+  ShoppingCartOutlined,
+  DollarOutlined,
+  InboxOutlined,
+  ShareAltOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { deleteItems, getAllItems, getAllItemsFromWebsite, setEditItem } from "../../store/items";
+import {
+  deleteItems,
+  getAllItems,
+  getAllItemsFromWebsite,
+  setEditItem,
+} from "../../store/items";
 import ItemDetailsModal from "./ViewModal";
 
 const Items = () => {
@@ -41,10 +47,10 @@ const Items = () => {
       const { payload } = await dispatch(getAllItems());
       console.log(payload);
       if (payload.data.success) {
-        const {payload : webItems} =await dispatch(getAllItemsFromWebsite())
+        const { payload: webItems } = await dispatch(getAllItemsFromWebsite());
 
-        console.log(webItems,"websitems");
-        
+        console.log(webItems, "websitems");
+
         setItems(payload.data.items);
         if (payload.data.items.length > 0) {
           setSelectedRecord(payload.data.items[0]);
@@ -98,12 +104,114 @@ const Items = () => {
         break;
       case "delete":
         dispatch(deleteItems(record._id));
-        callGetAllItems()
+        callGetAllItems();
         break;
       default:
         break;
     }
   };
+
+  const columns = [
+    {
+      title: "ITEM DETAILS",
+      key: "itemDetails",
+      render: (_, record) => (
+        <div className="flex items-center space-x-3">
+          {record.img && record.img.length > 0 ? (
+            <Image
+              src={record.img[0]}
+              alt={record.name}
+              className="!w-12 !h-12 object-cover rounded"
+              fallback=""
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+              <InboxOutlined className="text-gray-400" />
+            </div>
+          )}
+          <div>
+            <div className="font-medium">{record.name}</div>
+            <div className="text-xs text-gray-500">Code: {record.itemCode}</div>
+            {record.category && record.category[0] && (
+              <Tag color="blue" className="mt-1">
+                {record.category[0].name}
+              </Tag>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "PRICING",
+      key: "pricing",
+      render: (_, record) => (
+        <div>
+          <div className="flex items-center text-green-600">
+            <DollarOutlined className="mr-1" />
+            Sale: ₹{record.salePrice?.salePrice || 0}
+            {record.salePrice?.discountPrice && (
+              <Tag color="orange" className="ml-2">
+                {record.salePrice.discountPrice}% OFF
+              </Tag>
+            )}
+          </div>
+          <div className="text-gray-600 mt-1">
+            Purchase: ₹{record.purchasePrice?.purchasePrice || 0}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Tax: {record.taxes}%</div>
+        </div>
+      ),
+    },
+    {
+      title: "STOCK",
+      key: "stock",
+      render: (_, record) => (
+        <div>
+          <div className="flex items-center">
+            <ShoppingCartOutlined className="mr-1" />
+            <span
+              className={`font-medium ${
+                record.stock?.openingQty < record.stock?.minimumStock
+                  ? "text-red-500"
+                  : "text-green-600"
+              }`}
+            >
+              {record.stock?.openingQty || 0} {record.unit?.baseUnit}
+            </span>
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            Min Stock: {record.stock?.minimumStock || 0}
+          </div>
+          <div className="text-xs text-gray-500">
+            Location: {record.stock?.location || "N/A"}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "LAST UPDATED",
+      key: "lastUpdated",
+      render: (_, record) => (
+        <div className="text-gray-600">
+          {new Date(record.updatedAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })}
+        </div>
+      ),
+    },
+    {
+      title: "",
+      key: "action",
+      width: 50,
+      render: (_, record) => (
+        <Dropdown overlay={itemActionMenu(record)} trigger={["click"]}>
+          <Button type="text" className="border-none" icon={<MoreOutlined />} />
+        </Dropdown>
+      ),
+    },
+  ];
 
   const itemActionMenu = (record) => (
     <Menu>
@@ -120,8 +228,6 @@ const Items = () => {
         </Space>
       </Menu.Item>
       <Menu.Divider />
-    
-     
       <Menu.Item
         key="delete"
         danger
@@ -135,231 +241,54 @@ const Items = () => {
     </Menu>
   );
 
-  const transactionActionMenu = (record) => (
-    <Menu>
-      <Menu.Item key="view" onClick={() => handleMenuClick(record, "view")}>
-        <Space>
-          <EyeOutlined />
-          View Details
-        </Space>
-      </Menu.Item>
-      <Menu.Item key="edit" onClick={() => handleMenuClick(record, "edit")}>
-        <Space>
-          <EditOutlined />
-          Edit Transaction
-        </Space>
-      </Menu.Item>
-      <Menu.Item key="download">
-        <Space>
-          <DownloadOutlined />
-          Download Invoice
-        </Space>
-      </Menu.Item>
-      <Menu.Item key="share">
-        <Space>
-          <ShareAltOutlined />
-          Share
-        </Space>
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item
-        key="delete"
-        danger
-        onClick={() => handleMenuClick(record, "delete")}
-      >
-        <Space>
-          <DeleteOutlined />
-          Delete Transaction
-        </Space>
-      </Menu.Item>
-    </Menu>
-  );
+  console.log(selectedRecord, "selecetd record");
 
-  const itemColumns = [
-    {
-      title: "ITEM",
-      dataIndex: "name",
-      key: "name",
-    },
-
-    {
-      title: "QUANTITY",
-      dataIndex: ["stock", "openingQty"], // Modified to access nested property
-      key: "quantity",
-      align: "right",
-      render: (
-        openingQty // Changed parameter name to match
-      ) => (
-        <span className={openingQty < 0 ? "text-red-500" : "text-green-500"}>
-          {openingQty}
-        </span>
-      ),
-    },
-
-    {
-      title: "",
-      key: "action",
-      render: (_, record) => (
-        <Dropdown overlay={itemActionMenu(record)} trigger={["click"]}>
-          <Button type="text" className="border-none" icon={<MoreOutlined />} />
-        </Dropdown>
-      ),
-    },
-  ];
-
-  const transactionColumns = [
-    {
-      title: "TYPE",
-      dataIndex: "type",
-      key: "type",
-      render: (text) => (
-        <Space>
-          <span
-            className={`w-2 h-2 rounded-full ${
-              text === "Sale" ? "bg-green-500" : "bg-blue-500"
-            } inline-block`}
-          ></span>
-          {text}
-        </Space>
-      ),
-    },
-    {
-      title: "INVOICE/REF. NO",
-      dataIndex: "invoiceNo",
-      key: "invoiceNo",
-    },
-    {
-      title: "NAME",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "DATE",
-      dataIndex: "date",
-      key: "date",
-    },
-    {
-      title: "QUANTITY",
-      dataIndex: "quantity",
-      key: "quantity",
-      align: "right",
-    },
-    {
-      title: "PRICE/UNIT",
-      dataIndex: "pricePerUnit",
-      key: "pricePerUnit",
-      align: "right",
-      render: (value) => `₹ ${value.toFixed(2)}`,
-    },
-    {
-      title: "TOTAL",
-      dataIndex: "total",
-      key: "total",
-      align: "right",
-      render: (value) => `₹ ${value.toFixed(2)}`,
-    },
-    {
-      title: "STATUS",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag color={status === "Partial" ? "warning" : "success"}>{status}</Tag>
-      ),
-    },
-    {
-      title: "",
-      key: "action",
-      render: (_, record) => (
-        <Dropdown overlay={transactionActionMenu(record)} trigger={["click"]}>
-          <Button type="text" className="border-none" icon={<MoreOutlined />} />
-        </Dropdown>
-      ),
-    },
-  ];
-
-
-  console.log(selectedRecord,"selecetd record");
-  
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Panel */}
-      <div className="w-1/4 p-4 border-r border-gray-200 shadow-crisp">
-        <div className="flex justify-between items-center mb-4">
-          <Input
-            prefix={<SearchOutlined className="text-gray-400" />}
-            placeholder="Search items"
-            className="w-48"
-          />
-          <Tooltip title="Add New Item">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="flex items-center"
-              onClick={() => navigate("/items/add-item")}
-            >
-              Add Item
-            </Button>
-          </Tooltip>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <Card className="shadow-crisp">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">Items</h1>
+            <p className="text-gray-500">Manage your inventory items</p>
+          </div>
+          <Space size="middle">
+            <Input
+              prefix={<SearchOutlined className="text-gray-400" />}
+              placeholder="Search items"
+              className="w-64"
+              allowClear
+            />
+            <Tooltip title="Add New Item">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate("/items/add-item")}
+              >
+                Add Item
+              </Button>
+            </Tooltip>
+          </Space>
         </div>
 
         <Table
           dataSource={items}
-          columns={itemColumns}
-          pagination={false}
-          className="min-h-[80vh]"
-          rowClassName="cursor-pointer hover:bg-blue-50"
-          size="small"
+          columns={columns}
+          rowKey="_id"
+          pagination={{
+            total: items.length,
+            pageSize: 10,
+            showTotal: (total) => `Total ${total} items`,
+            showSizeChanger: true,
+            showQuickJumper: true,
+          }}
+          className="mt-4"
         />
-      </div>
+      </Card>
 
-      {/* Right Panel */}
-      <div className="flex-1 px-4">
-        <Card className="mb-4 shadow-crisp">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-lg font-medium">TRANSACTIONS</span>
-            <Space>
-              <DatePicker className="w-40" placeholder="Filter by date" />
-              <Button icon={<FilterOutlined />}>Filter</Button>
-              <Input
-                prefix={<SearchOutlined className="text-gray-400" />}
-                placeholder="Search transactions"
-                className="w-64"
-              />
-            </Space>
-          </div>
-          <Table
-            dataSource={transactions}
-            columns={transactionColumns}
-            pagination={{
-              total: transactions.length,
-              pageSize: 10,
-              showTotal: (total) => `Total ${total} items`,
-            }}
-            className="min-h-[90vh]"
-            size="small"
-          />
-        </Card>
-      </div>
-
-      {/* <Modal
-        title="Item Details"
+      <ItemDetailsModal
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        footer={null}
-      >
-        {selectedRecord && (
-          <div>
-            <p>Name: {selectedRecord.name}</p>
-            <p>Quantity: {selectedRecord.quantity}</p>
-            <p>Category: {selectedRecord.category}</p>
-            <p>Last Updated: {selectedRecord.lastUpdated}</p>
-          </div>
-        )}
-      </Modal> */}
-      <ItemDetailsModal
-       visible={isModalVisible}
-       onCancel={() => setIsModalVisible(false)}
-       selectedRecord={selectedRecord}
+        selectedRecord={selectedRecord}
       />
     </div>
   );

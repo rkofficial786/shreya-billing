@@ -17,9 +17,9 @@ const PaymentDetails = ({
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  
+  // (record.price * record.quantity * (record.tax / 100))
   const totalTax = selectedProducts.reduce(
-    (sum, item) => sum + item.price * item.quantity * 0.18,
+    (sum, item) => sum + item.price * item.quantity * (item.tax / 100),
     0
   );
   

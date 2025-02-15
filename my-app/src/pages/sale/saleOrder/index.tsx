@@ -253,14 +253,14 @@ const SaleOrder = () => {
       width: 200,
       render: (_: any, record: TableSaleOrder) => (
         <Space size="middle">
-          <Button
+          {/* <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
             onClick={() => handleConvertToSale(record.originalData)}
           >
             CONVERT TO SALE
-          </Button>
+          </Button> */}
           <Dropdown
             menu={{
               items: [

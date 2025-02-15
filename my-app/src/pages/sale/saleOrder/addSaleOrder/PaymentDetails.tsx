@@ -190,33 +190,20 @@ const PaymentDetails = ({
           Add Payment
         </Button>
         <br />
-        {/* Description section */}
-        {showDescription ? (
-          <Form.Item name="description" label="Description">
-            <FloatingLabelTextArea
-              onChange={handleDescriptionChange}
-              rows={4}
-            />
-            <Button
-              type="text"
-              danger
-              onClick={handleRemoveDescription}
-              icon={<DeleteOutlined />}
-              className="mt-2"
-            >
-              Remove Description
-            </Button>
-          </Form.Item>
-        ) : (
+
+        <Form.Item name="description" label="Description">
+          <FloatingLabelTextArea onChange={handleDescriptionChange} rows={4} />
           <Button
-            type="dashed"
-            onClick={() => setShowDescription(true)}
-            className="w-[35%]"
-            icon={<PlusOutlined />}
+            type="text"
+            danger
+            onClick={handleRemoveDescription}
+            icon={<DeleteOutlined />}
+            className="mt-2"
           >
-            Add Description
+            Remove Description
           </Button>
-        )}
+        </Form.Item>
+
         <hr />
 
         {/* File upload buttons */}
@@ -227,11 +214,11 @@ const PaymentDetails = ({
             </Button>
           </Upload>
 
-          <Upload {...uploadProps("document")} className="w-full">
+          {/* <Upload {...uploadProps("document")} className="w-full">
             <Button icon={<FileTextOutlined />} className="w-full">
               Add Document
             </Button>
-          </Upload>
+          </Upload> */}
         </Space>
       </div>
 

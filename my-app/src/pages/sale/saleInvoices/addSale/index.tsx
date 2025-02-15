@@ -12,7 +12,7 @@ import {
   getSaleInvoiceById,
   updateSaleInvoice,
 } from "../../../../store/sale/saleInvoice";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const AddSale = () => {
   const [form] = Form.useForm();
@@ -26,36 +26,41 @@ const AddSale = () => {
   const [receivedAmount, setReceivedAmount] = useState(0);
   const [isEditMode, setIsEditMode] = useState(false);
   const [saleInvoiceData, setSaleInvoiceData] = useState(null);
-
+  const navigate = useNavigate();
   const transformSaleInvoiceData = (data) => {
     if (!data) return null;
+    console.log(data.items, "data.items");
 
-    // Transform items data
+    // Transform items data with proper key generation
     const transformedItems = data.items.map((item, index) => ({
-      key: index + 1,
-      item: item.name,
-      quantity: item.quantity,
-      unit: "NONE",
-      price: item.pricePerUnit,
-      priceType: "withoutTax",
-      tax: "NONE",
+      key: String(index + 1), // Ensure keys are unique strings
+      item: item.name || "",
+      id: item._id,
+      quantity: Number(item.quantity) || 0,
+      unit: item.unit || "NONE",
+      price: Number(item.pricePerUnit) || 0,
+      priceType: item.priceType || "withoutTax",
+      tax: item.tax || "NONE",
     }));
 
-    // Transform payment options
+    console.log(transformedItems, "transformed items");
+
+    // Transform payment options with proper number conversion
     const transformedPayments = data.paymentOption.map((payment) => ({
       type: payment.paymentType,
-      amount: Number(payment.paymentAmount),
+      amount: Number(payment.paymentAmount) || 0,
     }));
 
-    // Set the form data
+    // Set the form data with proper defaults
     const formData = {
-      invoiceNumber: data.invoiceNumber,
-      invoiceDate: dayjs(data.invoiceDate),
-      customerName: data.customerName,
-      phoneNumber: data.phone,
-      stateOfSupply: data.stateOfSupply,
-      description: data.description,
-      paymentType: transformedPayments[0]?.paymentType || "Cash",
+      invoiceNumber: data.invoiceNumber || "",
+      invoiceDate: data.invoiceDate ? dayjs(data.invoiceDate) : dayjs(),
+      customerName: data.customerName || "",
+      phoneNumber: data.phone || "",
+      stateOfSupply: data.stateOfSupply || "",
+      description: data.description || "",
+      paymentType: transformedPayments[0]?.type || "Cash",
+      party: data.party || "",
     };
 
     return {
@@ -66,21 +71,21 @@ const AddSale = () => {
       documents: data.documents || [],
     };
   };
-
   const callGetInvoiceSaleById = async () => {
     if (!id) return;
 
     try {
       const { payload } = await dispatch(getSaleInvoiceById(id));
+
+      console.log(payload.data, "payload main id");
+
       if (payload.data.success) {
         const transformedData = transformSaleInvoiceData(
           payload.data.salesInvoice
         );
         setSaleInvoiceData(transformedData);
         setIsEditMode(true);
-        console.log(transformedData, "transformed data");
 
-        // Update component state
         form.setFieldsValue(transformedData.formData);
         setItems(transformedData.items);
         setPayments(transformedData.payments);
@@ -95,14 +100,15 @@ const AddSale = () => {
     }
   };
 
-  useEffect(() => {
+  console.log("helo");
+
+  const initializeData = async () => {
     if (id) {
-      callGetInvoiceSaleById();
+      await callGetInvoiceSaleById();
     } else {
-      // Initialize with default values for create mode
       setItems([
         {
-          key: 1,
+          key: "1",
           item: "",
           quantity: 0,
           unit: "NONE",
@@ -112,7 +118,10 @@ const AddSale = () => {
         },
       ]);
     }
-  }, [id]);
+  };
+  useEffect(() => {
+    initializeData();
+  }, []);
 
   const initialData = {
     invoiceNumber: "2",
@@ -131,8 +140,10 @@ const AddSale = () => {
 
   // Update parent component's receivedAmount whenever payments change
   React.useEffect(() => {
-    setReceivedAmount(totalReceivedAmount);
-  }, [totalReceivedAmount, setReceivedAmount]);
+    if (totalReceivedAmount !== receivedAmount) {
+      setReceivedAmount(totalReceivedAmount);
+    }
+  }, [totalReceivedAmount]);
 
   const getTaxRate = (taxString) => {
     if (taxString === "NONE") return 0;
@@ -201,7 +212,7 @@ const AddSale = () => {
   const calculateBalance = () => {
     return calculateTotal() - receivedAmount;
   };
-
+  console.log(items, "items new");
   // New function to handle form submission
   const handleSave = async () => {
     try {
@@ -211,6 +222,7 @@ const AddSale = () => {
 
       const itemData = items.map((item) => ({
         name: item.item,
+        _id: item.id,
         quantity: item.quantity,
         pricePerUnit: item.price,
         tax: item.tax,
@@ -225,6 +237,7 @@ const AddSale = () => {
       formData.append("invoiceDate", formValues.invoiceDate.toISOString());
       formData.append("customerName", formValues.customerName);
       formData.append("phone", formValues.phoneNumber || "");
+      formData.append("party", formValues.party || "");
       formData.append("stateOfSupply", formValues.stateOfSupply || "");
       formData.append("invoiceAmount", totalInvoiceAmount.toString());
       formData.append("received", totalReceivedAmount.toString());
@@ -244,6 +257,7 @@ const AddSale = () => {
       itemData.forEach((item, index) => {
         formData.append(`items[${index}][name]`, item.name);
         formData.append(`items[${index}][quantity]`, item.quantity.toString());
+        formData.append(`items[${index}][_id]`, item._id);
         formData.append(
           `items[${index}][pricePerUnit]`,
           item.pricePerUnit.toString()
@@ -279,6 +293,7 @@ const AddSale = () => {
         message.success(
           `Sale invoice ${isEditMode ? "updated" : "created"} successfully`
         );
+        navigate("/sale/invoices");
       } else {
         throw new Error(payload.data.message || "Operation failed");
       }

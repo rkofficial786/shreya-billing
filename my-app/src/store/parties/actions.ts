@@ -2,7 +2,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../apis/api";
 
 export const createParty = createAsyncThunk(`/party`, async (payload: any) => {
-  const { status, data } = await api.post("/api/parties", payload);
+  const { status, data } = await api.post("/api/parties", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return { status, data };
 });
 
@@ -40,8 +44,6 @@ export const getPartyById = createAsyncThunk(
     return { status, data };
   }
 );
-
-
 
 export const getPartyTransactionById = createAsyncThunk(
   `/getPartyTransactionById`,

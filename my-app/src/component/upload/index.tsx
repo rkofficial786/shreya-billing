@@ -1,115 +1,87 @@
-import { Upload, Button, Typography, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import React, { useState } from 'react';
+import { Upload, Button, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 
-const { Text } = Typography;
+interface FileUploadProps {
+  onFileChange: (file: any) => void;
+  attachment?: any;
+  name: string;
+  accept?: string;
+}
 
-const FileUpload = ({ index, field, handleFieldChange }) => {
-  const handleUploadChange = (info) => {
-    const { file } = info;
+const FileUpload: React.FC<FileUploadProps> = ({
+  onFileChange,
+  attachment,
+  name,
+  accept
+}) => {
+  const [fileList, setFileList] = useState<UploadFile[]>(
+    attachment ? [attachment] : []
+  );
 
-    if (file.status === "done" || file.status === "uploading") {
-      // Simulate successful upload
-      handleFieldChange(index, "value", file.name); // Update the field value with the file name
-      message.success(`${file.name} uploaded successfully.`);
-    } else if (file.status === "error") {
-      message.error(`Failed to upload ${file.name}.`);
+  const handleUpload = async (file: RcFile) => {
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Data = e.target?.result;
+        const fileData = {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          base64: base64Data,
+          lastModified: file.lastModified,
+        };
+
+        console.log(fileData,"file data");
+        
+        onFileChange(fileData);
+      };
+      reader.readAsDataURL(file);
+      return false; // Prevent default upload
+    } catch (error) {
+      message.error('File processing failed');
+      return false;
+    }
+  };
+
+  const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
+    // Update the file list for UI
+    setFileList(newFileList);
+    
+    // If file is removed
+    if (newFileList.length === 0) {
+      onFileChange(null);
+    }
+  };
+
+  const uploadProps: UploadProps = {
+    name,
+    fileList,
+    beforeUpload: handleUpload,
+    onChange: handleChange,
+    maxCount: 1,
+    accept,
+    onRemove: () => {
+      setFileList([]);
+      onFileChange(null);
+    },
+    customRequest: ({ onSuccess }) => {
+      // Mock successful upload
+      setTimeout(() => {
+        onSuccess?.("ok");
+      }, 0);
     }
   };
 
   return (
-    <div className="w-1/2">
-      <Upload
-        customRequest={({ onSuccess }) => {
-          // Simulate an immediate success response
-          setTimeout(() => onSuccess("ok"), 0);
-        }}
-        onChange={handleUploadChange}
-        showUploadList={false} // Don't show the default file list
-      >
-        <Button
-          icon={<UploadOutlined />}
-          className="w-full flex items-center justify-center"
-        >
-          Upload File
-        </Button>
-      </Upload>
-      {field.value && (
-        <Text className="block mt-2 text-sm text-gray-600">
-          Uploaded File: <strong>{field.value}</strong>
-        </Text>
-      )}
-    </div>
+    <Upload {...uploadProps} className="w-full">
+      <Button icon={<UploadOutlined />} className="w-full">
+        Upload File
+      </Button>
+    </Upload>
   );
 };
 
 export default FileUpload;
-
-
-
-
-// import { Upload, Button, Typography, message } from "antd";
-// import { UploadOutlined } from "@ant-design/icons";
-
-// const { Text } = Typography;
-
-// const FileUpload = ({ index, field, handleFieldChange }) => {
-//   const handleUploadChange = (info) => {
-//     const { file } = info;
-
-//     if (file.status === "done") {
-//       // Assume the API returns the file name or URL in `file.response`
-//       const uploadedFileName = file.response?.name || file.name; // Fallback to the local file name
-//       handleFieldChange(index, "value", uploadedFileName); // Update the field value
-//       message.success(`${file.name} uploaded successfully.`);
-//     } else if (file.status === "error") {
-//       const errorMsg =
-//         file?.error?.message || `Failed to upload ${file.name}.`;
-//       console.error("Upload Error:", errorMsg, file.error);
-//       message.error(errorMsg);
-//     }
-//   };
-
-//   const beforeUpload = (file) => {
-//     const isValidType =
-//       file.type === "image/png" ||
-//       file.type === "image/jpeg" ||
-//       file.type === "application/pdf" ||
-//       file.type === "application/msword" ||
-//       file.type ===
-//         "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
-//     if (!isValidType) {
-//       message.error("You can only upload images or documents!");
-//       return Upload.LIST_IGNORE; // Ignore unsupported files
-//     }
-
-//     return true;
-//   };
-
-//   return (
-//     <div className="w-1/2">
-//       <Upload
-//         name="file"
-//         action="/upload" // Replace with your upload API endpoint
-//         onChange={handleUploadChange}
-//         beforeUpload={beforeUpload}
-//         showUploadList={false} // Don't show default Ant Design file list
-//       >
-//         <Button
-//           icon={<UploadOutlined />}
-//           className="w-full flex items-center justify-center"
-//         >
-//           Upload File
-//         </Button>
-//       </Upload>
-//       {field.value && (
-//         <Text className="block mt-2 text-sm text-gray-600">
-//           Uploaded File: <strong>{field.value}</strong>
-//         </Text>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default FileUpload;
-

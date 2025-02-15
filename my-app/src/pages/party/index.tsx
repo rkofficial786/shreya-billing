@@ -67,47 +67,73 @@ const Party = () => {
   }, []);
 
   const handleAddParty = async (values) => {
-    console.log(values, "values");
+    console.log("Incoming values:", values);
 
     try {
-      const payloadApi = {
-        name: values.name,
-        gstin: values.gstin,
-        phone: values.phone,
-        gstAndAddress: {
-          gstType: values.gstAndAddress.gstType,
-          state: values.gstAndAddress.state,
-          email: values.gstAndAddress.email,
-          billingAddress: values.gstAndAddress.billingAddress,
-          shipping: values.gstAndAddress.shippingAddress
-            ? [{ address: values.shippingAddress }]
-            : undefined,
-        },
-        creditAndBlance: {
-          openingBalance: values.creditAndBlance.openingBalance
-            ? Number(values.creditAndBlance.openingBalance)
-            : undefined,
-          date: values.creditAndBlance.date
-            ? new Date(values.creditAndBlance.date)
-            : undefined,
-          limit: values.creditAndBlance.limit
-            ? Number(values.creditAndBlance.limit)
-            : null,
-        },
-        additionalFields: {
-          fields: values.additionalFields,
-          showInPrint: false,
-        },
-      };
-
-      console.log(payloadApi, "payload api");
-
+      // Create FormData object
+      const formData = new FormData();
+  
+      // Add basic fields
+      formData.append('name', values.name);
+      formData.append('gstin', values.gstin);
+      formData.append('phone', values.phone);
+  
+      // Add nested objects as JSON strings
+      formData.append('gstAndAddress', JSON.stringify({
+        gstType: values.gstAndAddress.gstType,
+        state: values.gstAndAddress.state,
+        email: values.gstAndAddress.email,
+        billingAddress: values.gstAndAddress.billingAddress,
+        shipping: values.gstAndAddress.shipping || []
+      }));
+  
+      formData.append('creditAndBlance', JSON.stringify({
+        openingBalance: values.creditAndBlance.openingBalance ? Number(values.creditAndBlance.openingBalance) : undefined,
+        date: values.creditAndBlance.date ? new Date(values.creditAndBlance.date).toISOString() : undefined,
+        limit: values.creditAndBlance.limit ? Number(values.creditAndBlance.limit) : null
+      }));
+  
+      // Add additional fields
+      const processedAdditionalFields = {};
+      if (values.additionalFields) {
+        Object.entries(values.additionalFields).forEach(([key, value]) => {
+          if (key && value) {
+            processedAdditionalFields[key] = value;
+          }
+        });
+      }
+      formData.append('additionalFields', JSON.stringify({
+        fields: processedAdditionalFields,
+        showInPrint: false
+      }));
+  
+      // Handle attachments
+      if (values.attachments && values.attachments.length > 0) {
+        formData.append('attachments', JSON.stringify(
+          values.attachments.map(attachment => ({
+            key: attachment.key
+          }))
+        ));
+  
+        // Add files
+        for (const attachment of values.attachments) {
+          // Convert base64 to blob
+          const base64Response = await fetch(attachment.file.base64);
+          const blob = await base64Response.blob();
+          
+          // Create file from blob
+          const file = new File([blob], attachment.file.name, { type: attachment.file.type });
+          
+          // Append file to formData with 'img' field name as expected by backend
+          formData.append('img', file);
+        }
+      }
       if (editingParty) {
         // Handle edit
         const { payload } = await dispatch(
           updateParty({
             id: editingParty._id,
-            data: payloadApi,
+            data: formData,
           })
         );
 
@@ -117,26 +143,28 @@ const Party = () => {
           form.resetFields();
           callGetAllParty();
         } else {
-          toast.error(payload.data.msg);
+          toast.error(payload.data.msg || "Failed to update party");
         }
       } else {
         // Handle create
-        const { payload } = await dispatch(createParty(payloadApi));
+        const { payload } = await dispatch(createParty(formData));
 
         if (payload.data.success) {
           toast.success("Party added successfully");
+          form.resetFields();
           callGetAllParty();
         } else {
-          toast.error(payload.data.msg);
+          toast.error(payload.data.msg || "Failed to create party");
         }
       }
       setIsAddPartyModalOpen(false);
     } catch (error) {
       console.error("Error handling party:", error);
-      toast.error("An error occurred");
+      toast.error(
+        error.message || "An error occurred while processing the request"
+      );
     }
   };
-
   const handleEditParty = (party, e) => {
     console.log(party, "party");
 
@@ -377,7 +405,7 @@ const Party = () => {
                       getBalance(party) >= 0 ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    ₹ {getBalance(party).toFixed(2)}
+                    ₹ {getBalance(party).toFixed(2) || 'N/A'}
                   </span>
                   <Dropdown
                     menu={getPartyMenuItems(party)}

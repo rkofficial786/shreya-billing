@@ -60,6 +60,9 @@ const AddQuotation = () => {
   );
 
   const mapQuotationDataToForm = (data) => {
+
+    console.log(data,"data");
+    
     const mappedItems = data.items.map((item, index) => ({
       key: index + 1,
       id: item._id,
@@ -90,6 +93,7 @@ const AddQuotation = () => {
       invoiceDate: dayjs(data.invoiceDate),
       referenceNumber: data.refNumber,
       roundOff: data.roundOff,
+      description: data.description,
     };
   };
 
@@ -200,6 +204,7 @@ const AddQuotation = () => {
 
     const quotationData = {
       refNumber: formValues.referenceNumber,
+      description: formValues.description,
       invoiceDate: formValues.invoiceDate
         ? formValues.invoiceDate.toDate()
         : new Date(),

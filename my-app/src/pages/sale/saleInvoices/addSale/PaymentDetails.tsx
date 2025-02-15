@@ -70,7 +70,7 @@ const PaymentDetails = ({
       setPayments([{ id: Date.now(), type: "Cash", amount: totalAmount }]);
       setReceivedAmount(totalAmount);
     }
-  }, [isCash, calculateTotal]);
+  }, [isCash]);
 
   // Update parent component's receivedAmount whenever payments change
   useEffect(() => {
@@ -247,13 +247,7 @@ const PaymentDetails = ({
       </div>
 
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span>Round Off</span>
-          <Space>
-            <Switch defaultChecked disabled={isCash} />
-            <span>-0.3</span>
-          </Space>
-        </div>
+       
 
         <div className="flex justify-between items-center">
           <span>Total</span>

@@ -69,7 +69,7 @@ const SelectedProducts = ({
       render: (_, record) =>
         (
           record.price * record.quantity +
-          record.price * record.quantity * 0.18 -
+          record.price * record.quantity * (record.tax / 100) -
           (record.discount || 0)
         ).toFixed(2),
     },

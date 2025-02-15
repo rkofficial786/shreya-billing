@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import TransactionHeader from "../../../component/TransactionHeader";
 import { useDispatch } from "react-redux";
 import {
+  deleteSaleInvoice,
   getAllSaleInvoice,
   setEditSaleInvoice,
 } from "../../../store/sale/saleInvoice";
@@ -126,6 +127,8 @@ const SaleInvoices = () => {
   };
 
   const handleEdit = (record, action) => {
+    console.log(record,"reocede");
+    
     setSelectedRecord(record);
     switch (action) {
       case "edit":
@@ -133,7 +136,8 @@ const SaleInvoices = () => {
         navigate(`/sale/invoices/add-sale?id=${record.key}`);
         break;
       case "delete":
-        // Handle delete
+        dispatch(deleteSaleInvoice(record.key));
+        callGetSaleInvoice()
         break;
       default:
         break;
@@ -218,6 +222,10 @@ const SaleInvoices = () => {
           <Button type="link" danger onClick={() => handleEdit(record, "edit")}>
             Edit
           </Button>
+
+          <Button type="link" danger onClick={() => handleEdit(record, "delete")}>
+            Delete
+          </Button>
         </div>
       ),
     },
@@ -259,8 +267,8 @@ const SaleInvoices = () => {
           >
             Add Sale
           </Button>
-          <Button icon={<FileExcelOutlined />}>Export</Button>
-          <Button icon={<PrinterOutlined />}>Print</Button>
+          {/* <Button icon={<FileExcelOutlined />}>Export</Button> */}
+          {/* <Button icon={<PrinterOutlined />}>Print</Button> */}
         </div>
       </div>
       <Card>

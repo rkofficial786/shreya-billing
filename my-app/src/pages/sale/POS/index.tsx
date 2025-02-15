@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-import { getAllParties } from "../../../store/parties";
+import { createParty, getAllParties } from "../../../store/parties";
 import { getAllItemsBySearch, getAllItems } from "../../../store/items";
 import { createPos } from "../../../store/sale/pos";
 
@@ -36,12 +36,28 @@ const POS = () => {
     callGetAllParty();
   }, []);
 
-  const handleAddCashCustomer = (values: { name: string; phone: string }) => {
-    setSelectedCustomer({
-      name: values.name,
-      phone: values.phone,
-      id: "4454545454",
-    });
+  const handleAddCashCustomer = async (values: {
+    name: string;
+    phone: string;
+  }) => {
+    try {
+      const { payload } = await dispatch(
+        createParty({ name: values.name, phone: values.phone })
+      );
+
+      console.log(payload, "payload");
+
+      if (payload.data.success) {
+        toast.success("Party added successfully");
+        setSelectedCustomer({
+          name: payload.data.party.name,
+          phone: payload.data.party.name,
+          id: payload.data.party._id,
+        });
+      }
+    } catch (error) {
+      console.log(error, "error");
+    }
   };
 
   const callGetAllItems = async (value) => {

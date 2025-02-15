@@ -30,6 +30,9 @@ export const ItemsTable = ({
     callGetAllItems();
   }, []);
 
+
+  console.log(items,"items");
+  
   // Handler for item selection
 
   const handleItemChange = (key, field, value) => {
@@ -55,7 +58,8 @@ export const ItemsTable = ({
   // Modified handleItemSelect to work with the new handleItemChange
   const handleItemSelect = (value, itemKey) => {
     const selectedItem = saleItems.find((item) => item._id === value);
-
+  console.log(selectedItem,"selkecetd item");
+  
     if (selectedItem) {
       // Update all fields at once to prevent multiple rerenders
       const itemIndex = items.findIndex((item) => item.key === itemKey);
@@ -69,9 +73,12 @@ export const ItemsTable = ({
         quantity: selectedItem.stock.openingQty,
         unit: selectedItem.unit.baseUnit,
         price: selectedItem.salePrice.salePrice,
-        priceType: selectedItem.salePrice.taxType,
+        priceType: selectedItem.purchasePrice.taxType,
         tax: `IGST@${selectedItem.taxes}%`,
       };
+
+      console.log(updatedItems,"updated items");
+      
 
       setItems(updatedItems);
     }

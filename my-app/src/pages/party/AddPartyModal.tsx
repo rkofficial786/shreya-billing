@@ -1,5 +1,4 @@
 //@ts-nocheck
-
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -36,13 +35,12 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
   const [additionalFields, setAdditionalFields] = useState([
     { key: "", value: "" },
   ]);
+  const [attachmentFields, setAttachmentFields] = useState([
+    { key: "", file: null },
+  ]);
 
-  console.log(initialValues, "inital values");
-
-  // Initialize form with data when in edit mode
   useEffect(() => {
     if (initialValues) {
-      // Transform the data structure to match form fields
       const formValues = {
         partyName: initialValues.name,
         gstin: initialValues.gstin,
@@ -56,18 +54,16 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
         creditLimit: initialValues.creditAndBlance.limit,
       };
 
-      // Set shipping address if exists
       if (initialValues.gstAndAddress.shipping?.length > 0) {
         setEnableShipping(true);
         formValues.shippingAddress = initialValues.gstAndAddress.shipping[0];
       }
 
-      // Set credit limit switch if limit exists
       if (initialValues.creditAndBlance.limit !== null) {
         setCustomLimit(true);
       }
 
-      // Transform additional fields to match the component's structure
+      // Handle additional fields
       if (initialValues.additionalFields?.length > 0) {
         const transformedFields = initialValues.additionalFields
           .filter((field) => field.key && field.value)
@@ -75,18 +71,26 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
             key: field.key,
             value: field.value,
           }));
-
         setAdditionalFields(
-          transformedFields.length > 0
-            ? transformedFields
-            : [{ key: "", value: "" }]
+          transformedFields.length > 0 ? transformedFields : [{ key: "", value: "" }]
         );
       }
 
-      // Set all form values
+      // Handle attachment fields
+      if (initialValues.attachments?.length > 0) {
+        const transformedAttachments = initialValues.attachments
+          .filter((attachment) => attachment.key)
+          .map((attachment) => ({
+            key: attachment.key,
+            file: attachment.file,
+          }));
+        setAttachmentFields(
+          transformedAttachments.length > 0 ? transformedAttachments : [{ key: "", file: null }]
+        );
+      }
+
       form.setFieldsValue(formValues);
     } else {
-      // If no initial values, set default date
       form.setFieldsValue({
         asOfDate: dayjs(),
       });
@@ -98,7 +102,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
       setLoading(true);
       const values = await form.validateFields();
 
-      // Create additionalFields object from the array
+      // Process additional fields
       const additionalFieldsData = {};
       additionalFields.forEach((field) => {
         if (field.key && field.value) {
@@ -106,7 +110,16 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
         }
       });
 
-      // Transform the data to match the API structure
+      console.log(attachmentFields);
+      
+      // Process attachments
+      const attachmentsData = attachmentFields
+        .filter((field) => field.key && field.file)
+        .map((field) => ({
+          key: field.key,
+          file: field.file,
+        }));
+
       const finalValues = {
         name: values.partyName,
         gstin: values.gstin,
@@ -120,10 +133,11 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
         },
         creditAndBlance: {
           openingBalance: values.openingBalance,
-          date: values.asOfDate.toISOString(),
+          date: values?.asOfDate?.toISOString() || null,
           limit: customLimit ? values.creditLimit : undefined,
         },
         additionalFields: additionalFieldsData,
+        attachments: attachmentsData,
         ...(initialValues?._id ? { _id: initialValues._id } : {}),
       };
 
@@ -134,6 +148,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
       } else {
         form.resetFields();
         setAdditionalFields([{ key: "", value: "" }]);
+        setAttachmentFields([{ key: "", file: null }]);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -142,7 +157,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
     }
   };
 
-  // Rest of the component remains the same
+  // Additional fields handlers
   const handleAddField = () => {
     setAdditionalFields([...additionalFields, { key: "", value: "" }]);
   };
@@ -156,6 +171,22 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
     const newFields = [...additionalFields];
     newFields[index][field] = value;
     setAdditionalFields(newFields);
+  };
+
+  // Attachment fields handlers
+  const handleAddAttachment = () => {
+    setAttachmentFields([...attachmentFields, { key: "", file: null }]);
+  };
+
+  const handleRemoveAttachment = (index) => {
+    const newFields = attachmentFields.filter((_, i) => i !== index);
+    setAttachmentFields(newFields);
+  };
+
+  const handleAttachmentChange = (index, field, value) => {
+    const newFields = [...attachmentFields];
+    newFields[index][field] = value;
+    setAttachmentFields(newFields);
   };
 
   const gstTypes = [
@@ -195,7 +226,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
             type="link"
             icon={<PlusOutlined />}
             onClick={() => setEnableShipping(!enableShipping)}
-            className="p-0 text-blue-500 hover:text-blue-600"
+            className="p-0 text-neutral-500 hover:text-neutral-600"
           >
             Enable Shipping Address
           </Button>
@@ -210,7 +241,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
     },
     {
       key: "credit",
-      label: <div className="flex items-center gap-2">Credit & Balance</div>,
+      label: "Credit & Balance",
       children: (
         <div className="space-y-6">
           <Form.Item name="openingBalance">
@@ -226,10 +257,10 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
           </Form.Item>
 
           <div className="space-y-2">
-            <label className="block text-sm text-gray-600">Credit Limit</label>
+            <label className="block text-sm text-neutral-600">Credit Limit</label>
             <div className="flex items-center gap-4">
               <Switch checked={customLimit} onChange={setCustomLimit} />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-neutral-600">
                 {customLimit ? "Custom Limit" : "No Limit"}
               </span>
             </div>
@@ -257,17 +288,13 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
               <Input
                 placeholder="Field Name"
                 value={field.key}
-                onChange={(e) =>
-                  handleFieldChange(index, "key", e.target.value)
-                }
+                onChange={(e) => handleFieldChange(index, "key", e.target.value)}
                 className="w-1/2"
               />
               <Input
                 placeholder="Value"
                 value={field.value}
-                onChange={(e) =>
-                  handleFieldChange(index, "value", e.target.value)
-                }
+                onChange={(e) => handleFieldChange(index, "value", e.target.value)}
                 className="w-1/2"
               />
               <Button
@@ -294,37 +321,37 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
       label: "Attachment Fields",
       children: (
         <div className="space-y-4">
-          {additionalFields.map((field, index) => (
+          {attachmentFields.map((field, index) => (
             <div key={index} className="flex gap-4">
               <Input
                 placeholder="Attachment Name"
                 value={field.key}
-                onChange={(e) =>
-                  handleFieldChange(index, "key", e.target.value)
-                }
+                onChange={(e) => handleAttachmentChange(index, "key", e.target.value)}
                 className="w-1/2"
               />
-              <FileUpload
-                index={index}
-                field={field}
-                handleFieldChange={handleFieldChange}
-              />
+              <div className="w-1/2">
+                <FileUpload
+                  onFileChange={(file) => handleAttachmentChange(index, "file", file)}
+                  attachment={field.file}
+                  name={`attachment-${index}`}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                />
+              </div>
               <Button
                 type="text"
                 icon={<DeleteOutlined />}
-                onClick={() => handleRemoveField(index)}
+                onClick={() => handleRemoveAttachment(index)}
                 className="text-red-500 hover:text-red-600"
               />
             </div>
           ))}
-
           <Button
             type="dashed"
-            onClick={handleAddField}
+            onClick={handleAddAttachment}
             icon={<PlusOutlined />}
             className="w-full"
           >
-            Add Field
+            Add Attachment
           </Button>
         </div>
       ),
@@ -338,13 +365,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
           <Title level={5} className="m-0">
             {initialValues ? "Edit Party" : "Add Party"}
           </Title>
-          <Space>
-            {/* <Button
-              type="text"
-              icon={<SettingOutlined />}
-              className="flex items-center justify-center mr-6"
-            /> */}
-          </Space>
+          <Space />
         </div>
       }
       open={visible}
@@ -362,6 +383,7 @@ const AddPartyModal = ({ visible, onClose, onSubmit, initialValues, form }) => {
           type="primary"
           onClick={() => handleSubmit(false)}
           loading={loading}
+          className="bg-primary-500 hover:bg-primary-600"
         >
           Save
         </Button>,

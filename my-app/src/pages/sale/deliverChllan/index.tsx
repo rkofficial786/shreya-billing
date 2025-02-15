@@ -155,9 +155,9 @@ const DeliveryChallan = () => {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" ghost>
+          {/* <Button type="primary" ghost>
             CONVERT TO SALE
-          </Button>
+          </Button> */}
           <Dropdown
             menu={{
               items: [

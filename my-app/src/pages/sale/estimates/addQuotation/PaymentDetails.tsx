@@ -111,15 +111,14 @@ const PaymentDetails = ({
       }
     }, 100);
   };
-  console.log(existingDocs,"existing docs");
+  console.log(existingDocs, "existing docs");
   const handleRemove = (file, type) => {
     console.log(file, "file");
     const matchingFile = existingDocs.filter((item) => item != file.url);
-    setExistingDocs(matchingFile)
-    
-    
-  // console.log(existingDocs,"existing docs");
-  
+    setExistingDocs(matchingFile);
+
+    // console.log(existingDocs,"existing docs");
+
     if (type === "image") {
       setImageFileList((prev) => prev.filter((item) => item.uid !== file.uid));
     } else {
@@ -152,32 +151,10 @@ const PaymentDetails = ({
 
         <br />
         {/* Description section */}
-        {showDescription ? (
-          <Form.Item name="description" label="Description">
-            <FloatingLabelTextArea
-              onChange={handleDescriptionChange}
-              rows={4}
-            />
-            <Button
-              type="text"
-              danger
-              onClick={handleRemoveDescription}
-              icon={<DeleteOutlined />}
-              className="mt-2"
-            >
-              Remove Description
-            </Button>
-          </Form.Item>
-        ) : (
-          <Button
-            type="dashed"
-            onClick={() => setShowDescription(true)}
-            className="w-[35%]"
-            icon={<PlusOutlined />}
-          >
-            Add Description
-          </Button>
-        )}
+
+        <Form.Item name="description" label="Description">
+          <FloatingLabelTextArea onChange={handleDescriptionChange} rows={4} />
+        </Form.Item>
 
         <br />
         {/* File upload buttons */}

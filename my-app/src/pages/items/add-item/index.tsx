@@ -257,18 +257,31 @@ const AddItemPage = () => {
     );
 
     // Append images
+    const existingImages = [];
+    const newImages = [];
+
+    // Separate existing images and new uploads
     fileList.forEach((file) => {
       if (file.originFileObj) {
-        // Append new uploads
-        payload.append("img", file.originFileObj);
-      } else {
-        // Append existing images
-        payload.append("existingImg", file.url);
+        newImages.push(file.originFileObj);
+      } else if (file.url) {
+        existingImages.push(file.url);
       }
     });
 
+    // Append new image files individually
+    newImages.forEach(file => {
+      payload.append("img", file);
+    });
+
+    // Append existing images as a single array
+    if (existingImages.length > 0) {
+      payload.append("existingImg", JSON.stringify(existingImages));
+    }
+
     return payload;
   };
+console.log(fileList,"file list");
 
   const handleSubmit = async (saveAndNew = false) => {
     try {
@@ -321,6 +334,7 @@ const AddItemPage = () => {
         </div>
 
         <Form
+       
           form={form}
           layout="vertical"
           initialValues={{
@@ -344,18 +358,22 @@ const AddItemPage = () => {
           />
           <Divider />
 
-          <Form.Item name="images" label="Item Images" className="col-span-2">
+          <Form.Item  name="images" label="Item Images" className="col-span-2">
             <ImageUploadSection fileList={fileList} setFileList={setFileList} />
           </Form.Item>
 
-          <Tabs activeKey={activeTab} onChange={setActiveTab} className="mt-6">
-            <TabPane tab="Pricing" key="pricing">
-              <PricingSection />
-            </TabPane>
-            <TabPane tab="Stock" key="stock">
+          {/* <Tabs activeKey={activeTab} onChange={setActiveTab} className="mt-6"> */}
+            {/* <TabPane tab="Pricing" key="pricing"> */}
+            <hr className="mb-4" />
+            <h2 className="text-2xl mb-4 ">Pricing</h2>
+              <PricingSection form={form} />
+              <hr className="mb-4" />
+            {/* </TabPane> */}
+            {/* <TabPane tab="Stock" key="stock"> */}
+            <h2 className="text-2xl mb-4 ">Stocks</h2>
               <StockSection />
-            </TabPane>
-          </Tabs>
+            {/* </TabPane> */}
+          {/* </Tabs> */}
 
           <div className="flex justify-end gap-4 mt-6">
             <Button onClick={() => handleSubmit(true)}>Save & New</Button>

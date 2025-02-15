@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Form, Button, Select, Typography } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -8,8 +8,32 @@ import {
 
 const { Title } = Typography;
 
-export const PricingSection = () => {
-  const [showWholesalePrices, setShowWholesalePrices] = useState(false);
+export const PricingSection = ({ form }) => {
+  const [showWholesalePrices, setShowWholesalePrices] = React.useState(false);
+
+  const parseNumber = (value: string | number | null): number => {
+    if (value === null || value === undefined) return 0;
+    return parseFloat(String(value).replace(/,/g, '')) || 0;
+  };
+
+  const formatNumber = (value: number): string => {
+    return value.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const calculateProfit = (purchasePrice: number | string | null, salePrice: number | string | null) => {
+    const parsedPurchasePrice = parseNumber(purchasePrice);
+    const parsedSalePrice = parseNumber(salePrice);
+
+    if (parsedPurchasePrice > 0 && parsedSalePrice > 0) {
+      const profitAmount = parsedSalePrice - parsedPurchasePrice;
+      const profitPercentage = ((profitAmount / parsedPurchasePrice) * 100).toFixed(1);
+      return `₹${formatNumber(profitAmount)} (${profitPercentage}%)`;
+    }
+    return '-';
+  };
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -21,9 +45,8 @@ export const PricingSection = () => {
               className="w-full"
               label="Enter purchase price"
               prefix="₹"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              parser={(value) => parseNumber(value)}
             />
           </Form.Item>
           <Form.Item name="purchasePriceType" className="w-40">
@@ -35,7 +58,23 @@ export const PricingSection = () => {
             />
           </Form.Item>
         </div>
+        
+        {/* Profit display with shouldUpdate */}
+        <Form.Item shouldUpdate={(prevValues, curValues) => 
+          prevValues.purchasePrice !== curValues.purchasePrice || 
+          prevValues.salePrice !== curValues.salePrice
+        }>
+          {() => (
+            <div className="text-sm text-neutral-500 mt-1">
+              Profit: {calculateProfit(
+                form.getFieldValue('purchasePrice'),
+                form.getFieldValue('salePrice')
+              )}
+            </div>
+          )}
+        </Form.Item>
       </div>
+
       <div>
         <Title level={5}>Sale Price</Title>
         <div className="flex gap-4">
@@ -44,19 +83,10 @@ export const PricingSection = () => {
               className="w-full"
               placeholder="Enter sale price"
               prefix="₹"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
+              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              parser={(value) => parseNumber(value)}
             />
           </Form.Item>
-          {/* <Form.Item name="salePriceType" className="w-40">
-            <FloatingLabelSelect
-              options={[
-                { value: "withoutTax", label: "Without Tax" },
-                { value: "withTax", label: "With Tax" },
-              ]}
-            />
-          </Form.Item> */}
         </div>
 
         <div className="flex gap-4">
@@ -81,7 +111,7 @@ export const PricingSection = () => {
           <Button
             type="link"
             icon={<PlusOutlined />}
-            className="text-blue-500 p-0"
+            className="text-secondary-500 p-0"
             onClick={() => setShowWholesalePrices(true)}
           >
             Add Wholesale Price
@@ -107,9 +137,8 @@ export const PricingSection = () => {
                   className="w-full"
                   placeholder="Wholesale Price"
                   prefix="₹"
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  parser={(value) => parseNumber(value)}
                 />
               </Form.Item>
               <Form.Item name="wholesalePriceType" className="w-40">

@@ -200,14 +200,14 @@ const Estimates = () => {
       width: 180,
       render: (_, record) => (
         <Space size="middle">
-          <Button
+          {/* <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
             onClick={() => handleConvert(record.key)}
           >
             CONVERT
-          </Button>
+          </Button> */}
           <Dropdown
             menu={{
               items: [
