@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Button, Input, Empty, Dropdown, Space, Tag } from "antd";
+import {
+  Table,
+  Button,
+  Input,
+  Empty,
+  Dropdown,
+  Space,
+  Tag,
+  message,
+} from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -13,6 +22,7 @@ import {
 } from "@ant-design/icons";
 import TransactionHeader from "../../../component/TransactionHeader";
 import {
+  conversionSaleOrder,
   deleteSaleOrder,
   getAllSaleOrder,
 } from "../../../store/sale/saleOrder";
@@ -20,6 +30,7 @@ import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import InvoicePreviewModal from "./InvoiceTempelate";
+import ConversionDialog from "./convert";
 
 // Define interfaces for type safety
 interface PaymentOption {
@@ -81,7 +92,8 @@ const SaleOrder = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [conversionVisible, setConversionVisible] = useState(false);
+  const [selectedSaleOrder, setSelectedSaleOrder] = useState(null);
   const [searchText, setSearchText] = useState<string>("");
 
   const [pagination, setPagination] = useState({
@@ -253,14 +265,14 @@ const SaleOrder = () => {
       width: 200,
       render: (_: any, record: TableSaleOrder) => (
         <Space size="middle">
-          {/* <Button
+          <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
-            onClick={() => handleConvertToSale(record.originalData)}
+            onClick={() => handleConvert(record.key)}
           >
-            CONVERT TO SALE
-          </Button> */}
+            CONVERT
+          </Button>
           <Dropdown
             menu={{
               items: [
@@ -316,6 +328,34 @@ const SaleOrder = () => {
   const handleShareOrder = (orderId: string) => {
     // Implement share logic
     console.log("Sharing order:", orderId);
+  };
+
+  const handleConversion = async (type) => {
+    try {
+      const { payload } = await dispatch(
+        conversionSaleOrder({
+          id: selectedSaleOrder.key,
+          data: { status: type },
+        })
+      );
+
+      if (payload.data.success) {
+        message.success(`Sale Order successfully converted `);
+
+        callGetSaleOrder(pagination.current);
+      }
+    } catch (error) {
+      console.error("Conversion failed:", error);
+      message.error("Failed to convert ");
+    }
+  };
+
+  const handleConvert = (id) => {
+    console.log(id, "id");
+
+    const saleOrder = orders.find((q) => q.key === id);
+    setSelectedSaleOrder(saleOrder);
+    setConversionVisible(true);
   };
 
   const EmptyState = () => (
@@ -404,6 +444,12 @@ const SaleOrder = () => {
         invoice={selectedInvoice}
         visible={previewVisible}
         onCancel={() => setPreviewVisible(false)}
+      />
+      <ConversionDialog
+        visible={conversionVisible}
+        onCancel={() => setConversionVisible(false)}
+        onConvert={handleConversion}
+        data={selectedSaleOrder}
       />
     </div>
   );

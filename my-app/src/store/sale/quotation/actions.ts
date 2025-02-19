@@ -49,3 +49,14 @@ export const getQuotationById = createAsyncThunk(
     return { status, data };
   }
 );
+
+export const conversionQuotation = createAsyncThunk(
+  `/convertion`,
+  async (param: any) => {
+    const { status, data } = await api.patch(
+      `/api/quotation/status/${param.id}`,
+      param.data
+    );
+    return { status, data };
+  }
+);

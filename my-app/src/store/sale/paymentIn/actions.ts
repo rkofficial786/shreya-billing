@@ -49,3 +49,14 @@ export const deletePaymentInvoice = createAsyncThunk(
     return { status, data };
   }
 );
+
+export const conversionPaymentIn = createAsyncThunk(
+  `/conversionSaleInvoice`,
+  async (param: any) => {
+    const { status, data } = await api.patch(
+      `/api/paymentIn/status/${param.id}`,
+      param.data
+    );
+    return { status, data };
+  }
+);

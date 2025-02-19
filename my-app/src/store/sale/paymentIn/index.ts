@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  conversionPaymentIn,
   createPaymentInvoice,
   deletePaymentInvoice,
   getAllPaymentInvoices,
@@ -33,6 +34,9 @@ export const paymentInvoiceSlice = createSlice({
       })
       .addCase(createPaymentInvoice.fulfilled, (state, { payload }) => {
         // Handle create success
+      })
+      .addCase(conversionPaymentIn.fulfilled, (state, { payload }) => {
+        // Handle create success
       });
   },
 });
@@ -45,6 +49,7 @@ export {
   deletePaymentInvoice,
   updatePaymentInvoice,
   createPaymentInvoice,
+  conversionPaymentIn
 };
 
 export default paymentInvoiceSlice.reducer;

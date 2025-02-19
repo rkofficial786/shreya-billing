@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createSaleOrder, deleteSaleOrder, getAllSaleOrder, getSaleOrderById, updateSaleOrder } from "./actions";
+import { conversionSaleOrder, createSaleOrder, deleteSaleOrder, getAllSaleOrder, getSaleOrderById, updateSaleOrder } from "./actions";
 
 const initialState = {
   editSaleOrder: null,
@@ -22,6 +22,7 @@ export const SaleOrderSlice = createSlice({
     builder.addCase(updateSaleOrder.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllSaleOrder.fulfilled, (state, { payload }) => {});
     builder.addCase(createSaleOrder.fulfilled, (state, { payload }) => {});
+    builder.addCase(conversionSaleOrder.fulfilled, (state, { payload }) => {});
   },
 });
 
@@ -33,5 +34,6 @@ export {
   updateSaleOrder,
   getAllSaleOrder,
   createSaleOrder,
+  conversionSaleOrder
 };
 export default SaleOrderSlice.reducer;

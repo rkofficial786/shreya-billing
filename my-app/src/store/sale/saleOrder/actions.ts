@@ -49,3 +49,15 @@ export const getSaleOrderById = createAsyncThunk(
     return { status, data };
   }
 );
+
+export const conversionSaleOrder = createAsyncThunk(
+  `/conversionSaleOrder`,
+  async (param: any) => {
+    const { status, data } = await api.patch(
+      `/api/salesOrder/status/${param.id}`,
+      param.data
+    );
+    return { status, data };
+  }
+);
+

@@ -12,6 +12,7 @@ import {
   Dropdown,
   Menu,
   Form,
+  message,
 } from "antd";
 import {
   SearchOutlined,
@@ -29,7 +30,9 @@ import {
   createPaymentInvoice,
   updatePaymentInvoice,
   getAllPaymentInvoices,
+  conversionPaymentIn,
 } from "../../../store/sale/paymentIn";
+import ConversionDialog from "./convert";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -44,6 +47,8 @@ const PaymentIn = () => {
   const [selectedFirm, setSelectedFirm] = useState("ALL FIRMS");
   const [searchText, setSearchText] = useState("");
   const [page, setPage] = useState(1);
+  const [conversionVisible, setConversionVisible] = useState(false);
+  const [selectedPaymentIn, setSelectedPaymentIn] = useState(null);
   const [pageSize, setPageSize] = useState(10);
   const [searchParams, setSearchParams] = useState({
     searchText: "",
@@ -164,6 +169,32 @@ const PaymentIn = () => {
     });
   };
 
+  const handleConversion = async (type) => {
+    try {
+      const { payload } = await dispatch(
+        conversionPaymentIn({
+          id: selectedPaymentIn._id,
+          data: { status: type },
+        })
+      );
+
+      if (payload.data.success) {
+        message.success(`Sale Order successfully converted `);
+
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Conversion failed:", error);
+      message.error("Failed to convert ");
+    }
+  };
+
+  const handleConvert = (id) => {
+    const paymentIn = data?.find((q) => q._id === id);
+    setSelectedPaymentIn(paymentIn);
+    setConversionVisible(true);
+  };
+
   // Search Handler
   const handleSearch = (value) => {
     // Reset to first page when searching
@@ -271,13 +302,42 @@ const PaymentIn = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-          <Button type="text" icon={<PrinterOutlined />} />
-          <Button type="text" icon={<ShareAltOutlined />} />
           <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => editPaymentIn(record)}
-          />
+            type="primary"
+            size="small"
+            onClick={() => handleConvert(record._id)}
+          >
+            Convert
+          </Button>
+          <Space.Compact>
+            {/* <Button type="text" icon={<PrinterOutlined />} /> */}
+            {/* <Button type="text" icon={<ShareAltOutlined />} /> */}
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item
+                    key="edit"
+                    icon={<EditOutlined />}
+                    onClick={() => editPaymentIn(record)}
+                  >
+                    Edit
+                  </Menu.Item>
+                  {/* <Menu.Item 
+                    key="share" 
+                    icon={<ShareAltOutlined />}
+                  >
+                    Share
+                  </Menu.Item> */}
+                  <Menu.Item key="print" icon={<PrinterOutlined />}>
+                    Print
+                  </Menu.Item>
+                </Menu>
+              }
+              trigger={["click"]}
+            >
+              <Button type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          </Space.Compact>
         </Space>
       ),
     },
@@ -370,6 +430,13 @@ const PaymentIn = () => {
         isEdit={!!selectedRecord}
         setPayments={setPayments}
         payments={payments}
+      />
+
+      <ConversionDialog
+        visible={conversionVisible}
+        onCancel={() => setConversionVisible(false)}
+        onConvert={handleConversion}
+        data={selectedPaymentIn}
       />
     </div>
   );

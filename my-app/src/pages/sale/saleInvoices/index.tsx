@@ -9,23 +9,30 @@ import {
   Modal,
   Form,
   message,
+  Menu,
+  Dropdown,
 } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
   PrinterOutlined,
   FileExcelOutlined,
+  MoreOutlined,
+  DeleteOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import SalesStatistics from "./SalesStatic";
 import { useNavigate } from "react-router-dom";
 import TransactionHeader from "../../../component/TransactionHeader";
 import { useDispatch } from "react-redux";
 import {
+  conversionSaleInvoice,
   deleteSaleInvoice,
   getAllSaleInvoice,
   setEditSaleInvoice,
 } from "../../../store/sale/saleInvoice";
 import { handleInvoiceAction, InvoicePreviewModal } from "./InvoiceTempelate";
+import ConversionDialog from "./convert";
 const { RangePicker } = DatePicker;
 
 const SaleInvoices = () => {
@@ -36,6 +43,8 @@ const SaleInvoices = () => {
   const [selectedRecord, setSelectedRecord] = useState({});
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [conversionVisible, setConversionVisible] = useState(false);
+  const [selectedSaleInvoice, setSelectedSaleInvoice] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [pagination, setPagination] = useState({
@@ -127,8 +136,8 @@ const SaleInvoices = () => {
   };
 
   const handleEdit = (record, action) => {
-    console.log(record,"reocede");
-    
+    console.log(record, "reocede");
+
     setSelectedRecord(record);
     switch (action) {
       case "edit":
@@ -137,11 +146,37 @@ const SaleInvoices = () => {
         break;
       case "delete":
         dispatch(deleteSaleInvoice(record.key));
-        callGetSaleInvoice()
+        callGetSaleInvoice();
         break;
       default:
         break;
     }
+  };
+
+  const handleConversion = async (type) => {
+    try {
+      const { payload } = await dispatch(
+        conversionSaleInvoice({
+          id: selectedSaleInvoice.key,
+          data: { status: type },
+        })
+      );
+
+      if (payload.data.success) {
+        message.success(`Sale Invoice successfully converted `);
+
+        callGetSaleInvoice(pagination.current);
+      }
+    } catch (error) {
+      console.error("Conversion failed:", error);
+      message.error("Failed to convert ");
+    }
+  };
+
+  const handleConvert = (id) => {
+    const saleInvoice = salesInvoiceData.find((q) => q.key === id);
+    setSelectedSaleInvoice(saleInvoice);
+    setConversionVisible(true);
   };
 
   const columns = [
@@ -211,21 +246,56 @@ const SaleInvoices = () => {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-2">
           <Button
-            type="link"
-            icon={<PrinterOutlined />}
-            onClick={() =>
-              handleInvoiceAction(record, setPreviewVisible, setSelectedInvoice)
+            type="primary"
+            size="small"
+            onClick={() => handleConvert(record.key)}
+          >
+            Convert
+          </Button>
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item
+                  key="print"
+                  icon={<PrinterOutlined />}
+                  onClick={() =>
+                    handleInvoiceAction(
+                      record,
+                      setPreviewVisible,
+                      setSelectedInvoice
+                    )
+                  }
+                >
+                  Print
+                </Menu.Item>
+                <Menu.Item
+                  key="edit"
+                  icon={<EditOutlined />}
+                  onClick={() => handleEdit(record, "edit")}
+                >
+                  Edit
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  key="delete"
+                  icon={<DeleteOutlined />}
+                  danger
+                  onClick={() => handleEdit(record, "delete")}
+                >
+                  Delete
+                </Menu.Item>
+              </Menu>
             }
-          />
-          <Button type="link" danger onClick={() => handleEdit(record, "edit")}>
-            Edit
-          </Button>
-
-          <Button type="link" danger onClick={() => handleEdit(record, "delete")}>
-            Delete
-          </Button>
+            trigger={["click"]}
+          >
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              className="hover:bg-gray-100"
+            />
+          </Dropdown>
         </div>
       ),
     },
@@ -287,6 +357,13 @@ const SaleInvoices = () => {
         visible={previewVisible}
         invoice={selectedInvoice}
         onCancel={() => setPreviewVisible(false)}
+      />
+
+      <ConversionDialog
+        visible={conversionVisible}
+        onCancel={() => setConversionVisible(false)}
+        onConvert={handleConversion}
+        data={selectedSaleInvoice}
       />
     </div>
   );

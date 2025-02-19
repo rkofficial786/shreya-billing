@@ -49,3 +49,15 @@ export const getSaleInvoiceById = createAsyncThunk(
     return { status, data };
   }
 );
+
+
+export const conversionSaleInvoice = createAsyncThunk(
+  `/convertionSaleInvoice`,
+  async (param: any) => {
+    const { status, data } = await api.patch(
+      `/api/salesInvoice/status/${param.id}`,
+      param.data
+    );
+    return { status, data };
+  }
+);

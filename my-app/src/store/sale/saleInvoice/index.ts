@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  conversionSaleInvoice,
   createSaleInvoice,
   deleteSaleInvoice,
   getAllSaleInvoice,
@@ -28,6 +29,7 @@ export const SaleInvoiceSlice = createSlice({
     builder.addCase(updateSaleInvoice.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllSaleInvoice.fulfilled, (state, { payload }) => {});
     builder.addCase(createSaleInvoice.fulfilled, (state, { payload }) => {});
+    builder.addCase(conversionSaleInvoice.fulfilled, (state, { payload }) => {});
   },
 });
 
@@ -39,5 +41,6 @@ export {
   updateSaleInvoice,
   getAllSaleInvoice,
   createSaleInvoice,
+  conversionSaleInvoice
 };
 export default SaleInvoiceSlice.reducer;

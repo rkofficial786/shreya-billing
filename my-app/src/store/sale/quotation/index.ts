@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  conversionQuotation,
   createQuotation,
   deleteQuotation,
   getAllQuotation,
@@ -28,6 +29,7 @@ export const QuotationSlice = createSlice({
     builder.addCase(updateQuotation.fulfilled, (state, { payload }) => {});
     builder.addCase(getAllQuotation.fulfilled, (state, { payload }) => {});
     builder.addCase(createQuotation.fulfilled, (state, { payload }) => {});
+    builder.addCase(conversionQuotation.fulfilled, (state, { payload }) => {});
   },
 });
 
@@ -39,5 +41,6 @@ export {
   updateQuotation,
   getAllQuotation,
   createQuotation,
+  conversionQuotation
 };
 export default QuotationSlice.reducer;

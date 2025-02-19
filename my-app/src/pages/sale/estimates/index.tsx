@@ -23,11 +23,16 @@ import {
 import TransactionHeader from "../../../component/TransactionHeader";
 import { useDispatch } from "react-redux";
 import {
+  conversion,
+  conversionQuotation,
   deleteQuotation,
   getAllQuotation,
+  updateQuotation,
 } from "../../../store/sale/quotation";
 import toast from "react-hot-toast";
 import InvoicePreviewModal, { handleInvoiceAction } from "./InvoiceTempelate";
+import ConversionDialog from "./convert";
+import { updateSaleInvoice } from "../../../store/sale/saleInvoice";
 
 const Estimates = () => {
   const navigate = useNavigate();
@@ -37,6 +42,8 @@ const Estimates = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [conversionVisible, setConversionVisible] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -88,6 +95,26 @@ const Estimates = () => {
   const handleSearch = (value) => {
     setSearchTerm(value);
     callGetQuotation(1, pagination.pageSize, value);
+  };
+
+  const handleConversion = async (type) => {
+    try {
+      const { payload } = await dispatch(
+        conversionQuotation({
+          id: selectedQuotation.key,
+          data: { status: type },
+        })
+      );
+
+      if (payload.data.success) {
+        message.success(`Quotation successfully converted `);
+
+        callGetQuotation(pagination.current, pagination.pageSize, searchTerm);
+      }
+    } catch (error) {
+      console.error("Conversion failed:", error);
+      message.error("Failed to convert quotation");
+    }
   };
 
   const handleTableChange = (newPagination, filters, sorter) => {
@@ -200,14 +227,14 @@ const Estimates = () => {
       width: 180,
       render: (_, record) => (
         <Space size="middle">
-          {/* <Button
+          <Button
             type="primary"
             ghost
             className="border-blue-500 text-blue-500"
             onClick={() => handleConvert(record.key)}
           >
             CONVERT
-          </Button> */}
+          </Button>
           <Dropdown
             menu={{
               items: [
@@ -246,8 +273,9 @@ const Estimates = () => {
     setSelectedInvoice(record);
   };
   const handleConvert = (id) => {
-    // Add your convert logic here
-    console.log("Converting quotation:", id);
+    const quotation = quotationData.find((q) => q.key === id);
+    setSelectedQuotation(quotation);
+    setConversionVisible(true);
   };
 
   const handleDelete = async (id) => {
@@ -355,6 +383,12 @@ const Estimates = () => {
         invoice={selectedInvoice}
         visible={previewVisible}
         onCancel={() => setPreviewVisible(false)}
+      />
+      <ConversionDialog
+        visible={conversionVisible}
+        onCancel={() => setConversionVisible(false)}
+        onConvert={handleConversion}
+        quotationData={selectedQuotation}
       />
     </div>
   );
